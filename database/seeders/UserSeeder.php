@@ -5,7 +5,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder {
-public function run(): void 
+public function run(): void
 {
     $admin = User::firstOrCreate(
         ['email' => 'windum@gmail.com'],
@@ -25,7 +25,7 @@ public function run(): void
     );
     $atasan->assignRole('atasan');
 
-    $perpus = User::firstOrCreate(
+    $perpus = User::updateOrCreate(
         ['email' => 'pustakawan@gmail.com'],
         [
             'nama' => 'Pustakawan SICO',

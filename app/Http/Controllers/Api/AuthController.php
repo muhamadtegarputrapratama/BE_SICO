@@ -16,8 +16,7 @@ class AuthController extends Controller
     use ApiResponse;
 
     public function __construct(protected AuthService $authService)
-    {
-    }
+    {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
