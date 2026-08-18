@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder {
 public function run(): void
 {
-    $admin = User::firstOrCreate(
-        ['email' => 'windum@gmail.com'],
+    $admin = User::updateOrCreate(
+        ['email' => 'dummin@gmail.com'],
         [
             'nama' => 'Admin SICO',
             'password' => Hash::make('Windum123'),
@@ -16,8 +16,8 @@ public function run(): void
     );
     $admin->assignRole('admin');
 
-    $atasan = User::firstOrCreate(
-        ['email' => 'pungdum@gmail.com'],
+    $atasan = User::updateOrCreate(
+        ['email' => 'dumsan@gmail.com'],
         [
             'nama' => 'Atasan SICO',
             'password' => Hash::make('Pungdum123'),
