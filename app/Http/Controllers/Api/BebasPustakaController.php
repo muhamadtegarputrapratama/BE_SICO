@@ -1,6 +1,4 @@
 <?php
-// app/Http/Controllers/Api/BebasPustakaController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -24,7 +22,7 @@ class BebasPustakaController extends Controller
     {
         $user = $request->user();
 
-        $query = $user->hasRole('pustakawan')
+        $query = $user->hasAnyRole(['pustakawan', 'atasan'])
             ? BebasPustaka::with('user')->latest()
             : BebasPustaka::with('user')->where('user_id', $user->id)->latest();
 

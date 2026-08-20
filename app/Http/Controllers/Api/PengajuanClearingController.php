@@ -29,11 +29,7 @@ class PengajuanClearingController extends Controller
         $query = PengajuanClearing::with(['user', 'admin', 'atasan']);
 
         $query = match (true) {
-            $user->hasRole('admin') => $query->latest(),
-            $user->hasRole('atasan') => $query->where(function ($q) use ($user) {
-                $q->where('status', PengajuanClearingStatus::DIVERIFIKASI_ADMIN->value)
-                ->orWhere('disetujui_atasan_oleh', $user->id);
-            })->latest(),            
+            $user->hasAnyRole(['admin', 'atasan']) => $query->latest(),
             default => $query->where('user_id', $user->id)->latest(),
         };
 
@@ -113,7 +109,7 @@ class PengajuanClearingController extends Controller
         return $this->success('Review atasan berhasil disimpan.', $pengajuanModel);
     }
 
-   public function downloadSurat(Request $request, $pengajuan)
+    public function downloadSurat(Request $request, $pengajuan)
     {
         $pengajuanModel = PengajuanClearing::find($pengajuan);
 
