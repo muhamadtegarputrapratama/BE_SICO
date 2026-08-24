@@ -158,7 +158,6 @@ class PengajuanClearingController extends Controller
         ]);
     }
 
-    // NEW - preview/serve dokumen persyaratan (KTM, SPP, Distribusi)
     public function previewDokumen(Request $request, $pengajuan, string $jenis)
     {
         $pengajuanModel = PengajuanClearing::find($pengajuan);
@@ -186,15 +185,10 @@ class PengajuanClearingController extends Controller
 
         $path = $pengajuanModel->{$fieldMap[$jenis]};
 
-        // Cek file pada disk 'public' atau 'local' (sesuaikan dengan disk tempat upload)
-        $disk = Storage::disk('public')->exists($path) ? 'public' : (Storage::disk('local')->exists($path) ? 'local' : null);
-
-        if (! $disk || ! $path) {
-            return $this->error("File tidak ditemukan di penyimpanan server.", null, 404);
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return $this->error("File tidak ditemukan.", null, 404);
         }
 
-        $filePath = Storage::disk($disk)->path($path);
-
-        return response()->file($filePath);
+        return response()->file(Storage::disk('local')->path($path));
     }
 }
