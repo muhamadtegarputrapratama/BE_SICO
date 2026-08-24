@@ -20,7 +20,7 @@ Route::prefix('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 });
-
+ 
 Route::get('/surat/verify/{token}', [VerifikasiSuratController::class, 'verify'])
     ->name('surat.verify');
 
@@ -49,8 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{pengajuan}/review-admin', [PengajuanClearingController::class, 'reviewAdmin'])
             ->middleware('permission:verifikasi-admin');
 
-        // FIXED - hapus "pengajuan-clearing/" duplikat di depan
-        Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
+       Route::get('/pengajuan-clearing/{pengajuan}/preview/{jenis}', [PengajuanClearingController::class, 'previewDokumen'])
+        ->middleware('auth:sanctum'); // sesuaikan middleware auth
 
         Route::post('/{pengajuan}/review-atasan', [PengajuanClearingController::class, 'reviewAtasan'])
             ->middleware('permission:verifikasi-atasan');

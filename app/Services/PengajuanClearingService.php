@@ -148,17 +148,19 @@ class PengajuanClearingService
         return $pengajuan->fresh();
     }
 
-    protected function simpanFile(UploadedFile $file, int $userId, string $label): string
+   protected function simpanFile(UploadedFile $file, int $userId, string $label): string
     {
-        return $file->store("clearing/{$userId}", 'local') ?: throw ValidationException::withMessages([
+        // Ganti 'local' menjadi 'public'
+        return $file->store("clearing/{$userId}", 'public') ?: throw ValidationException::withMessages([
             'file' => ["Gagal menyimpan file {$label}."],
         ]);
     }
 
     protected function hapusFileLama(?string $path): void
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        // Ganti 'local' menjadi 'public'
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
         }
     }
 }
