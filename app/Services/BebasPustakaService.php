@@ -1,12 +1,12 @@
 <?php
 // app/Services/BebasPustakaService.php
-
 namespace App\Services;
 
 use App\Enums\BebasPustakaStatus;
 use App\Models\BebasPustaka;
 use App\Models\User;
 use App\Traits\LogsActivity;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BebasPustakaService
@@ -15,24 +15,27 @@ class BebasPustakaService
 
     public function ajukan(User $user): BebasPustaka
     {
-        $adaProsesAktif = BebasPustaka::where('user_id', $user->id)
-            ->whereIn('status', [BebasPustakaStatus::DIAJUKAN, BebasPustakaStatus::REVISI])
-            ->exists();
+        return DB::transaction(function () use ($user) {
+            $adaProsesAktif = BebasPustaka::where('user_id', $user->id)
+                ->whereIn('status', [BebasPustakaStatus::DIAJUKAN, BebasPustakaStatus::REVISI])
+                ->lockForUpdate()
+                ->exists();
 
-        if ($adaProsesAktif) {
-            throw ValidationException::withMessages([
-                'bebas_pustaka' => ['Anda masih memiliki pengajuan bebas pustaka yang belum selesai.'],
+            if ($adaProsesAktif) {
+                throw ValidationException::withMessages([
+                    'bebas_pustaka' => ['Anda masih memiliki pengajuan bebas pustaka yang belum selesai.'],
+                ]);
+            }
+
+            $bebasPustaka = BebasPustaka::create([
+                'user_id' => $user->id,
+                'status' => BebasPustakaStatus::DIAJUKAN,
             ]);
-        }
 
-        $bebasPustaka = BebasPustaka::create([
-            'user_id' => $user->id,
-            'status' => BebasPustakaStatus::DIAJUKAN,
-        ]);
+            // $this->logActivity($user, 'Mengajukan bebas pustaka');
 
-        // $this->logActivity($user, 'Mengajukan bebas pustaka');
-
-        return $bebasPustaka;
+            return $bebasPustaka;
+        });
     }
 
     public function review(BebasPustaka $bebasPustaka, User $pustakawan, string $keputusan, ?string $catatan): BebasPustaka
@@ -42,6 +45,7 @@ class BebasPustakaService
                 'status' => ['Pengajuan ini sudah diproses sebelumnya']
             ]);
         }
+
         $status = match ($keputusan) {
             'setuju' => BebasPustakaStatus::DISETUJUI,
             'revisi' => BebasPustakaStatus::REVISI,
