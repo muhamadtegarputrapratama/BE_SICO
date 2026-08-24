@@ -42,25 +42,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('pengajuan-clearing')->group(function () {
         Route::get('/', [PengajuanClearingController::class, 'index']);
-
         Route::post('/', [PengajuanClearingController::class, 'store']);
         Route::get('/pengajuan-clearing/{id}', [PengajuanClearingController::class, 'show']);
         Route::post('/{pengajuan}/ajukan-ulang', [PengajuanClearingController::class, 'ajukanUlang']);
-
-
         Route::post('/', [PengajuanClearingController::class, 'store'])
             ->middleware('role:mahasiswa');
-
         Route::post('/{pengajuan}/ajukan-ulang', [PengajuanClearingController::class, 'ajukanUlang'])
             ->middleware('role:mahasiswa');
-
-
         Route::post('/{pengajuan}/review-admin', [PengajuanClearingController::class, 'reviewAdmin'])
             ->middleware('permission:verifikasi-admin');
-
+        Route::get('/pengajuan-clearing/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
         Route::post('/{pengajuan}/review-atasan', [PengajuanClearingController::class, 'reviewAtasan'])
             ->middleware('permission:verifikasi-atasan');
-
         Route::get('/{pengajuan}/download-surat', [PengajuanClearingController::class, 'downloadSurat']);
     });
 

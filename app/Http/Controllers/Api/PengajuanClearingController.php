@@ -157,4 +157,39 @@ class PengajuanClearingController extends Controller
             'Content-Length' => filesize($fullPath),
         ]);
     }
+
+    // NEW - preview/serve dokumen persyaratan (KTM, SPP, Distribusi) yang tersimpan di disk 'local'
+    public function previewDokumen(Request $request, $pengajuan, string $jenis)
+    {
+        $pengajuanModel = PengajuanClearing::find($pengajuan);
+
+        if (! $pengajuanModel) {
+            return $this->error("Data pengajuan tidak ditemukan.", null, 404);
+        }
+
+        $user = $request->user();
+        $bolehAkses = $pengajuanModel->user_id === $user->id || $user->hasAnyRole(['admin', 'atasan']);
+
+        if (! $bolehAkses) {
+            return $this->error("Anda tidak memiliki akses ke dokumen ini.", null, 403);
+        }
+
+        $fieldMap = [
+            'ktm' => 'file_ktm',
+            'spp' => 'file_bukti_spp',
+            'distribusi' => 'file_distribusi',
+        ];
+
+        if (! isset($fieldMap[$jenis])) {
+            return $this->error("Jenis dokumen tidak valid.", null, 404);
+        }
+
+        $path = $pengajuanModel->{$fieldMap[$jenis]};
+
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return $this->error("File tidak ditemukan.", null, 404);
+        }
+
+        return response()->file(Storage::disk('local')->path($path));
+    }
 }
