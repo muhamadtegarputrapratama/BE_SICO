@@ -45,7 +45,7 @@ class PengajuanClearingController extends Controller
 
     public function show($id)
     {
-        $data = PengajuanClearing::with('user')->find($id);
+        $data = PengajuanClearing::with('user', 'bebasPustaka')->find($id);
         if (!$data) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
@@ -60,7 +60,7 @@ class PengajuanClearingController extends Controller
 
         $data = $request->validate([
             'departemen' => ['sometimes', 'string', 'max:255'],
-            'program_studi' => ['sometimes', 'string', 'max:255'],
+            'program_studi' => ['sometimes', 'string', 'max:255'], 
             'file_ktm' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_bukti_spp' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_distribusi' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
