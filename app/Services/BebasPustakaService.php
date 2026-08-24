@@ -48,7 +48,7 @@ class BebasPustakaService
             return $bebasPustaka;
         });
     }
-
+  
     public function review(BebasPustaka $bebasPustaka, User $pustakawan, string $keputusan, ?string $catatan): BebasPustaka
     {
         if ($bebasPustaka->status !== BebasPustakaStatus::DIAJUKAN) {
