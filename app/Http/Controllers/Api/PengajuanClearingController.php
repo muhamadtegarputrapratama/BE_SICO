@@ -43,6 +43,15 @@ class PengajuanClearingController extends Controller
         return $this->success('Pengajuan clearing berhasil dibuat.', $pengajuan, 201);
     }
 
+    public function show($id)
+    {
+        $data = PengajuanClearing::with('user')->find($id);
+        if (!$data) {
+            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
+        }
+        return response()->json(['success' => true, 'data' => $data], 200);
+    }
+
     public function ajukanUlang(Request $request, PengajuanClearing $pengajuan): JsonResponse
     {
         if ($pengajuan->user_id !== $request->user()->id) {
