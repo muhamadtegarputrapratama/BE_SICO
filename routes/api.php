@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [PengajuanClearingController::class, 'store'])
             ->middleware('role:mahasiswa');
 
-        // FIXED - hapus "pengajuan-clearing/" duplikat di depan
+
         Route::get('/{id}', [PengajuanClearingController::class, 'show']);
 
         Route::post('/{pengajuan}/ajukan-ulang', [PengajuanClearingController::class, 'ajukanUlang'])
@@ -49,7 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{pengajuan}/review-admin', [PengajuanClearingController::class, 'reviewAdmin'])
             ->middleware('permission:verifikasi-admin');
 
-        // FIXED - hapus "pengajuan-clearing/" duplikat di depan
         Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
 
         Route::post('/{pengajuan}/review-atasan', [PengajuanClearingController::class, 'reviewAtasan'])
