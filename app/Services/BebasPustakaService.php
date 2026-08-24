@@ -16,12 +16,23 @@ class BebasPustakaService
     public function ajukan(User $user): BebasPustaka
     {
         return DB::transaction(function () use ($user) {
-            $adaProsesAktif = BebasPustaka::where('user_id', $user->id)
-                ->whereIn('status', [BebasPustakaStatus::DIAJUKAN, BebasPustakaStatus::REVISI])
+            $pengajuanTerakhir = BebasPustaka::where('user_id', $user->id)
+                ->whereIn('status', [
+                    BebasPustakaStatus::DIAJUKAN,
+                    BebasPustakaStatus::REVISI,
+                    BebasPustakaStatus::DISETUJUI, // NEW
+                ])
                 ->lockForUpdate()
-                ->exists();
+                ->latest()
+                ->first();
 
-            if ($adaProsesAktif) {
+            if ($pengajuanTerakhir) {
+                if ($pengajuanTerakhir->status === BebasPustakaStatus::DISETUJUI) {
+                    throw ValidationException::withMessages([
+                        'bebas_pustaka' => ['Pengajuan bebas pustaka Anda sudah disetujui. Anda tidak dapat mengajukan lagi.'],
+                    ]);
+                }
+
                 throw ValidationException::withMessages([
                     'bebas_pustaka' => ['Anda masih memiliki pengajuan bebas pustaka yang belum selesai.'],
                 ]);
