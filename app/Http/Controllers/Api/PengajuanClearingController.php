@@ -19,7 +19,7 @@ class PengajuanClearingController extends Controller
     use ApiResponse;
 
     public function __construct(protected PengajuanClearingService $service)
-    { 
+    {
     }
 
     public function index(Request $request): JsonResponse
@@ -60,7 +60,7 @@ class PengajuanClearingController extends Controller
 
         $data = $request->validate([
             'departemen' => ['sometimes', 'string', 'max:255'],
-            'program_studi' => ['sometimes', 'string', 'max:255'], 
+            'program_studi' => ['sometimes', 'string', 'max:255'],
             'file_ktm' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_bukti_spp' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_distribusi' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
@@ -73,7 +73,7 @@ class PengajuanClearingController extends Controller
 
     public function reviewAdmin(ReviewRequest $request, $pengajuan): JsonResponse
     {
-        if (! $request->user()->hasRole('admin')) {
+        if (! $request->user()->can('verifikasi-admin')) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 

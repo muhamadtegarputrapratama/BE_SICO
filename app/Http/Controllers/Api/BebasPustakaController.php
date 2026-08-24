@@ -38,7 +38,7 @@ class BebasPustakaController extends Controller
 
     public function review(ReviewRequest $request, BebasPustaka $bebasPustaka): JsonResponse
     {
-        if (! $request->user()->hasRole('pustakawan')) {
+        if (! $request->user()->can('verifikasi-pustaka')) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
