@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('pengajuan_clearing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('bebas_pustaka_id')->constrained('bebas_pustaka')->cascadeOnDelete();
+            $table->foreignId('bebas_pustaka_id')->unique()->constrained('bebas_pustaka')->cascadeOnDelete();
             $table->string('departemen');
             $table->string('program_studi');
             $table->string('file_ktm');
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('catatan_revisi')->nullable();
             $table->foreignId('direview_admin_oleh')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('direview_admin_at')->nullable();
+            $table->string('direview_admin_sebagai')->nullable();
             $table->foreignId('disetujui_atasan_oleh')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('disetujui_atasan_at')->nullable();
             $table->string('nomor_surat')->nullable()->unique();
