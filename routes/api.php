@@ -49,12 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{pengajuan}/review-admin', [PengajuanClearingController::class, 'reviewAdmin'])
             ->middleware('permission:verifikasi-admin');
 
-<<<<<<< HEAD
-       Route::get('/pengajuan-clearing/{pengajuan}/preview/{jenis}', [PengajuanClearingController::class, 'previewDokumen'])
-        ->middleware('auth:sanctum'); // sesuaikan middleware auth
-=======
         Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
->>>>>>> fa14d3d466ceef8a0362839687fbef9c078038df
+
+        Route::get('/pengajuan-clearing/{pengajuan}/preview/{jenis}', [PengajuanClearingController::class, 'previewDokumen'])
+            ->middleware('auth:sanctum'); // sesuaikan middleware auth
+
+        Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
+
 
         Route::post('/{pengajuan}/review-atasan', [PengajuanClearingController::class, 'reviewAtasan'])
             ->middleware('permission:verifikasi-atasan');
