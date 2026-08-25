@@ -30,6 +30,13 @@ class PengajuanClearing extends Model
         'file_surat',
     ];
 
+    // Otomatis menyertakan attribute URL ke JSON response
+    protected $appends = [
+        'url_ktm',
+        'url_bukti_spp',
+        'url_distribusi',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -37,6 +44,22 @@ class PengajuanClearing extends Model
             'direview_admin_at' => 'datetime',
             'disetujui_atasan_at' => 'datetime',
         ];
+    }
+
+    // Accessor URL Publik (Bisa dibuka langsung di browser)
+    public function getUrlKtmAttribute(): ?string
+    {
+        return $this->file_ktm ? asset('storage/' . $this->file_ktm) : null;
+    }
+
+    public function getUrlBuktiSppAttribute(): ?string
+    {
+        return $this->file_bukti_spp ? asset('storage/' . $this->file_bukti_spp) : null;
+    }
+
+    public function getUrlDistribusiAttribute(): ?string
+    {
+        return $this->file_distribusi ? asset('storage/' . $this->file_distribusi) : null;
     }
 
     public function user(): BelongsTo

@@ -13,6 +13,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpWord\TemplateProcessor;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Carbon\Carbon;
 
 class PengajuanClearingController extends Controller
 {
@@ -137,11 +140,15 @@ class PengajuanClearingController extends Controller
             return $this->error("File surat belum diterbitkan/dibuat di database.", null, 404);
         }
 
-        // Menggunakan path absolut langsung ke storage/app/
+        // Cek path standar storage/app/ atau storage/app/private/
         $fullPath = storage_path('app/' . $pengajuanModel->file_surat);
+        
+        if (! file_exists($fullPath)) {
+            $fullPath = storage_path('app/private/' . $pengajuanModel->file_surat);
+        }
 
         if (! file_exists($fullPath)) {
-            return $this->error("File surat fisik tidak ditemukan di direktori storage server ({$fullPath}).", null, 404);
+            return $this->error("File surat fisik tidak ditemukan di direktori storage server.", null, 404);
         }
 
         $cleanNomorSurat = str_replace('/', '_', $pengajuanModel->nomor_surat ?? "clearing-{$pengajuanModel->id}");
