@@ -192,10 +192,10 @@ class PengajuanClearingController extends Controller
 
         $path = $pengajuanModel->{$fieldMap[$jenis]};
 
-        if (! $path || ! Storage::disk('local')->exists($path)) {
+        if (! $path || ! Storage::disk('public')->exists($path)) {
             return $this->error("File tidak ditemukan.", null, 404);
         }
 
-        return response()->file(Storage::disk('local')->path($path));
+        return response()->file(Storage::disk('public')->path($path));
     }
 }
