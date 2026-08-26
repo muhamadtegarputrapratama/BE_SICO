@@ -79,7 +79,7 @@ class PengajuanClearingService
         $this->logActivity($user, "Mengajukan ulang pengajuan clearing #{$pengajuan->id}");
 
         return $pengajuan->fresh();
-    }
+    } 
 
     public function reviewAdmin(PengajuanClearing $pengajuan, User $admin, string $keputusan, ?string $catatan): PengajuanClearing
     {
