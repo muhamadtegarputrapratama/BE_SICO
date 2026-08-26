@@ -22,8 +22,6 @@
             line-height: 1.45;
         }
 
-
-
         .kop {
             width: 100%;
             border-bottom: 1.4px solid #c7d2fe;
@@ -72,9 +70,6 @@
             color: #475569;
         }
 
-
-
-
         .title {
             text-align: center;
             margin-top: 16px;
@@ -94,9 +89,6 @@
             font-size: 9.5pt;
             color: #334155;
         }
-
-
-
 
         .content {
             text-align: justify;
@@ -130,9 +122,6 @@
             margin-bottom: 12px;
         }
 
-
-
-
         .signature {
             width: 100%;
             margin-top: 36px;
@@ -145,8 +134,6 @@
             margin-right: 3%;
         }
 
-
-
         .date {
             font-size: 9.5pt;
             color: #334155;
@@ -154,16 +141,11 @@
             margin-bottom: 3px;
         }
 
-
-
-
         .signature-position {
             font-size: 9.5pt;
             text-align: center;
             margin-bottom: 4px;
         }
-
-
 
         .signature-table {
             width: 100%;
@@ -182,18 +164,12 @@
             vertical-align: top;
         }
 
-
-
-
         .qr {
             width: 70px;
             height: 70px;
             display: block;
             margin: 0 auto;
         }
-
-
-
 
         .signature-box {
             width: 82px;
@@ -251,21 +227,12 @@
 
 
 <body>
-
-
-
     <div class="kop">
-
         <table class="kop-table">
-
             <tr>
-
                 <td class="logo-cell">
-
                     <img src="{{ public_path('images/logo-ipb.png') }}" class="logo">
-
                 </td>
-
 
                 <td class="institution">
 
@@ -298,11 +265,9 @@
 
 
     <div class="title">
-
         <h1>
             SURAT KETERANGAN
         </h1>
-
         <p>
             Nomor:
             {{ $surat->nomor_surat }}
@@ -322,76 +287,33 @@
         </div>
 
 
-        <table class="identity">
+       <table class="identity">
 
-            <tr>
+    <tr>
+        <td class="label">NIM</td>
+        <td class="separator">:</td>
+        <td>{{ $surat->user->nim }}</td>
+    </tr>
 
-                <td class="label">
-                    NIM
-                </td>
+    <tr>
+        <td class="label">Nama</td>
+        <td class="separator">:</td>
+        <td>{{ $surat->user->nama }}</td>
+    </tr>
 
-                <td class="separator">
-                    :
-                </td>
+    <tr>
+        <td class="label">Departemen</td>
+        <td class="separator">:</td>
+        <td>{{ $surat->departemen }}</td>
+    </tr>
 
-                <td>
-                    {{ $surat->nim }}
-                </td>
+    <tr>
+        <td class="label">Program Studi</td>
+        <td class="separator">:</td>
+        <td>{{ $surat->program_studi }}</td>
+    </tr>
 
-            </tr>
-
-
-            <tr>
-
-                <td class="label">
-                    Nama
-                </td>
-
-                <td class="separator">
-                    :
-                </td>
-
-                <td>
-                    {{ $surat->nama }}
-                </td>
-
-            </tr>
-
-
-            <tr>
-
-                <td class="label">
-                    Departemen
-                </td>
-
-                <td class="separator">
-                    :
-                </td>
-
-                <td>
-                    {{ $surat->departemen }}
-                </td>
-
-            </tr>
-
-
-            <tr>
-
-                <td class="label">
-                    Program Studi
-                </td>
-
-                <td class="separator">
-                    :
-                </td>
-
-                <td>
-                    {{ $surat->program_studi }}
-                </td>
-
-            </tr>
-
-        </table>
+</table>
 
 
         <div class="paragraph">
