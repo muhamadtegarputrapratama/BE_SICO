@@ -287,33 +287,76 @@
         </div>
 
 
-       <table class="identity">
+        <table class="identity">
 
-    <tr>
-        <td class="label">NIM</td>
-        <td class="separator">:</td>
-        <td>{{ $surat->user->nim }}</td>
-    </tr>
+            <tr>
 
-    <tr>
-        <td class="label">Nama</td>
-        <td class="separator">:</td>
-        <td>{{ $surat->user->nama }}</td>
-    </tr>
+                <td class="label">
+                    NIM
+                </td>
 
-    <tr>
-        <td class="label">Departemen</td>
-        <td class="separator">:</td>
-        <td>{{ $surat->departemen }}</td>
-    </tr>
+                <td class="separator">
+                    :
+                </td>
 
-    <tr>
-        <td class="label">Program Studi</td>
-        <td class="separator">:</td>
-        <td>{{ $surat->program_studi }}</td>
-    </tr>
+                <td>
+                    {{ $surat->nim }}
+                </td>
 
-</table>
+            </tr>
+
+
+            <tr>
+
+                <td class="label">
+                    Nama
+                </td>
+
+                <td class="separator">
+                    :
+                </td>
+
+                <td>
+                    {{ $surat->nama }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="label">
+                    Departemen
+                </td>
+
+                <td class="separator">
+                    :
+                </td>
+
+                <td>
+                    {{ $surat->departemen }}
+                </td>
+
+            </tr>
+
+
+            <tr>
+
+                <td class="label">
+                    Program Studi
+                </td>
+
+                <td class="separator">
+                    :
+                </td>
+
+                <td>
+                    {{ $surat->program_studi }}
+                </td>
+
+            </tr>
+
+        </table>
 
 
         <div class="paragraph">
