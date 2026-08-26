@@ -79,7 +79,7 @@ class PengajuanClearingService
         $this->logActivity($user, "Mengajukan ulang pengajuan clearing #{$pengajuan->id}");
 
         return $pengajuan->fresh();
-    } 
+    }
 
     public function reviewAdmin(PengajuanClearing $pengajuan, User $admin, string $keputusan, ?string $catatan): PengajuanClearing
     {
@@ -108,41 +108,61 @@ class PengajuanClearingService
     }
 
 
-    public function reviewAtasan(PengajuanClearing $pengajuan, User $atasan, string $keputusan): PengajuanClearing
-    {
-        $statusAktual = $pengajuan->status instanceof \BackedEnum
-            ? $pengajuan->status->value
-            : (string) $pengajuan->status;
+   public function reviewAtasan(
+    PengajuanClearing $pengajuan,
+    User $atasan,
+    string $keputusan
+): PengajuanClearing {
 
-        $statusDiharapkan = PengajuanClearingStatus::DIVERIFIKASI_ADMIN->value;
+    $statusAktual = $pengajuan->status instanceof \BackedEnum
+        ? $pengajuan->status->value
+        : (string) $pengajuan->status;
 
-        if ($statusAktual !== $statusDiharapkan) {
-            throw ValidationException::withMessages([
-                'status' => ["Status saat ini adalah '{$statusAktual}', padahal yang dibutuhkan adalah '{$statusDiharapkan}'."],
-            ]);
-        }
+    $statusDiharapkan = PengajuanClearingStatus::DIVERIFIKASI_ADMIN->value;
 
-        if ($keputusan === 'tolak') {
-            $pengajuan->update([
-                'status' => PengajuanClearingStatus::DITOLAK,
-                'disetujui_atasan_oleh' => $atasan->id,
-                'disetujui_atasan_at' => now(),
-            ]);
+    if ($statusAktual !== $statusDiharapkan) {
+        throw ValidationException::withMessages([
+            'status' => [
+                "Status saat ini adalah '{$statusAktual}', padahal yang dibutuhkan adalah '{$statusDiharapkan}'."
+            ],
+        ]);
+    }
 
-            $this->logActivity($atasan, "Menolak pengajuan clearing #{$pengajuan->id}");
+    // Kalau ditolak
+    if ($keputusan === 'tolak') {
+        $pengajuan->update([
+            'status' => PengajuanClearingStatus::DITOLAK,
+            'disetujui_atasan_oleh' => $atasan->id,
+            'disetujui_atasan_at' => now(),
+        ]);
 
-            return $pengajuan->fresh();
-        }
-
-      
-
-        // Generate surat DOCX & QR Code
-        $this->suratService->generate($pengajuan->fresh());
-
-        $this->logActivity($atasan, "Menyetujui pengajuan clearing #{$pengajuan->id}, surat diterbitkan");
+        $this->logActivity(
+            $atasan,
+            "Menolak pengajuan clearing #{$pengajuan->id}"
+        );
 
         return $pengajuan->fresh();
     }
+
+    // Kalau disetujui
+    $pengajuan->update([
+        'status' => PengajuanClearingStatus::DISETUJUI,
+        'disetujui_atasan_oleh' => $atasan->id,
+        'disetujui_atasan_at' => now(),
+    ]);
+
+    // Generate surat PDF + QR
+    $this->suratService->generate(
+        $pengajuan->fresh()
+    );
+
+    $this->logActivity(
+        $atasan,
+        "Menyetujui pengajuan clearing #{$pengajuan->id}, surat diterbitkan"
+    );
+
+    return $pengajuan->fresh();
+}
 
    protected function simpanFile(UploadedFile $file, int $userId, string $label): string
     {

@@ -3,15 +3,20 @@
 namespace App\Services;
 
 use App\Models\PengajuanClearing;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class SuratClearingService
 {
     public function generate(PengajuanClearing $pengajuan)
     {
+        $pengajuan->load('user');
+
         $token = Str::random(64);
 
         $nomorSurat = 'SICO/' . date('Y') . '/' . $pengajuan->id;
@@ -21,13 +26,21 @@ class SuratClearingService
             'qr_token' => $token,
         ]);
 
+        
         $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
 
-        $qrCode = base64_encode(
-            QrCode::format('svg')
-                ->size(200)
-                ->generate($verifyUrl)
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
         );
+
+        $writer = new Writer($renderer);
+
+        $qrSvg = $writer->writeString($verifyUrl);
+
+
+        $qrCode = base64_encode($qrSvg);
 
         $surat = (object) [
             'nomor_surat' => $nomorSurat,
