@@ -110,11 +110,11 @@ class PengajuanClearingService
 
     public function reviewAtasan(PengajuanClearing $pengajuan, User $atasan, string $keputusan): PengajuanClearing
     {
-        $statusAktual = $pengajuan->status instanceof \BackedEnum 
-            ? $pengajuan->status->value 
+        $statusAktual = $pengajuan->status instanceof \BackedEnum
+            ? $pengajuan->status->value
             : (string) $pengajuan->status;
 
-        $statusDiharapkan = PengajuanClearingStatus::DIVERIFIKASI_ADMIN->value ?? 'diverifikasi_admin';
+        $statusDiharapkan = PengajuanClearingStatus::DIVERIFIKASI_ADMIN->value;
 
         if ($statusAktual !== $statusDiharapkan) {
             throw ValidationException::withMessages([
@@ -134,11 +134,7 @@ class PengajuanClearingService
             return $pengajuan->fresh();
         }
 
-        $pengajuan->update([
-            'status' => PengajuanClearingStatus::DISETUJUI,
-            'disetujui_atasan_oleh' => $atasan->id,
-            'disetujui_atasan_at' => now(),
-        ]);
+      
 
         // Generate surat DOCX & QR Code
         $this->suratService->generate($pengajuan->fresh());

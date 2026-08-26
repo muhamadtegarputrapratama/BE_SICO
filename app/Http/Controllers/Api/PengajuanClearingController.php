@@ -8,22 +8,22 @@ use App\Http\Requests\PengajuanClearing\StorePengajuanClearingRequest;
 use App\Http\Requests\ReviewRequest;
 use App\Models\PengajuanClearing;
 use App\Services\PengajuanClearingService;
+use App\Services\SuratClearingService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use PhpOffice\PhpWord\TemplateProcessor;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Carbon\Carbon;
 
 class PengajuanClearingController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(protected PengajuanClearingService $service)
-    {
-    }
+   public function __construct(
+    protected PengajuanClearingService $service,
+    protected SuratClearingService $suratService
+) {
+}
 
     public function index(Request $request): JsonResponse
     {
@@ -97,29 +97,49 @@ class PengajuanClearingController extends Controller
     }
 
     public function reviewAtasan(Request $request, $pengajuan): JsonResponse
-    {
-        if (! $request->user()->hasRole('atasan')) {
-            return $this->error('Anda tidak memiliki akses.', null, 403);
-        }
-
-        $pengajuanModel = PengajuanClearing::find($pengajuan);
-
-        if (! $pengajuanModel) {
-            return $this->error("Data pengajuan clearing dengan ID {$pengajuan} tidak ditemukan.", null, 404);
-        }
-
-        $data = $request->validate([
-            'keputusan' => ['required', 'in:setuju,tolak'],
-        ]);
-
-        try {
-            $pengajuanModel = $this->service->reviewAtasan($pengajuanModel, $request->user(), $data['keputusan']);
-        } catch (ValidationException $e) {
-            return $this->error($e->getMessage(), $e->errors(), 422);
-        }
-
-        return $this->success('Review atasan berhasil disimpan.', $pengajuanModel);
+{
+    if (! $request->user()->hasRole('atasan')) {
+        return $this->error('Anda tidak memiliki akses.', null, 403);
     }
+
+    $pengajuanModel = PengajuanClearing::find($pengajuan);
+
+    if (! $pengajuanModel) {
+        return $this->error(
+            "Data pengajuan clearing dengan ID {$pengajuan} tidak ditemukan.",
+            null,
+            404
+        );
+    }
+
+    $data = $request->validate([
+        'keputusan' => ['required', 'in:setuju,tolak'],
+    ]);
+
+    try {
+        $pengajuanModel = $this->service->reviewAtasan(
+            $pengajuanModel,
+            $request->user(),
+            $data['keputusan']
+        );
+
+        if ($data['keputusan'] === 'setuju') {
+            $pengajuanModel = $this->suratService->generate($pengajuanModel);
+        }
+
+    } catch (ValidationException $e) {
+        return $this->error(
+            $e->getMessage(),
+            $e->errors(),
+            422
+        );
+    }
+
+    return $this->success(
+        'Review atasan berhasil disimpan.',
+        $pengajuanModel
+    );
+}
 
     public function downloadSurat(Request $request, $pengajuan)
     {
@@ -142,7 +162,7 @@ class PengajuanClearingController extends Controller
 
         // Cek path standar storage/app/ atau storage/app/private/
         $fullPath = storage_path('app/' . $pengajuanModel->file_surat);
-        
+
         if (! file_exists($fullPath)) {
             $fullPath = storage_path('app/private/' . $pengajuanModel->file_surat);
         }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0245d23c8e827973a9bac28ed50c8840",
+    "content-hash": "cdc3d711f95ded1d5a184fa583dc78fe",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -999,16 +999,16 @@
         },
         {
             "name": "endroid/qr-code",
-            "version": "6.0.0",
+            "version": "6.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/endroid/qr-code.git",
-                "reference": "61cc3ef6863936b58e0cbe63a44da79efe3c84cd"
+                "reference": "21e888e8597440b2205e2e5c484b6c8e556bcd1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/endroid/qr-code/zipball/61cc3ef6863936b58e0cbe63a44da79efe3c84cd",
-                "reference": "61cc3ef6863936b58e0cbe63a44da79efe3c84cd",
+                "url": "https://api.github.com/repos/endroid/qr-code/zipball/21e888e8597440b2205e2e5c484b6c8e556bcd1a",
+                "reference": "21e888e8597440b2205e2e5c484b6c8e556bcd1a",
                 "shasum": ""
             },
             "require": {
@@ -1059,7 +1059,7 @@
             ],
             "support": {
                 "issues": "https://github.com/endroid/qr-code/issues",
-                "source": "https://github.com/endroid/qr-code/tree/6.0.0"
+                "source": "https://github.com/endroid/qr-code/tree/6.0.9"
             },
             "funding": [
                 {
@@ -1067,7 +1067,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-10-21T20:26:43+00:00"
+            "time": "2025-07-13T19:59:45+00:00"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -10057,12 +10057,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }
