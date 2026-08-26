@@ -14,7 +14,6 @@ class UserResource extends JsonResource
             'nama' => $this->nama,
             'nim' => $this->nim,
             'email' => $this->email,
-            'photo' => $this->photo,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'created_at' => $this->created_at,
         ];

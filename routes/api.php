@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pengajuan-clearing/{pengajuan}/preview/{jenis}', [PengajuanClearingController::class, 'previewDokumen'])
             ->middleware('auth:sanctum'); // sesuaikan middleware auth
 
-        Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
+        // Route::get('/{pengajuan}/dokumen/{jenis}', [PengajuanClearingController::class, 'previewDokumen']);
 
 
         Route::post('/{pengajuan}/review-atasan', [PengajuanClearingController::class, 'reviewAtasan'])
