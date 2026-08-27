@@ -76,7 +76,7 @@ Route::prefix('pengajuan-clearing')->group(function () {
 });
 
     Route::prefix('laporan')
-        ->middleware('permission:laporan-view')
+        ->middleware('permission:laporan-view, sanctum')
         ->group(function () {
             Route::get('/', [LaporanController::class, 'index']);
             Route::get('/export', [LaporanController::class, 'export']);
