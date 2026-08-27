@@ -62,7 +62,7 @@
         }
 
         .university {
-            font-size: 17pt;
+            font-size: 15pt;
             font-weight: bold;
             line-height: 1.1;
             margin-bottom: 3px;
@@ -206,9 +206,11 @@
             padding-top: 2px;
         }
 
-      
         .footer {
-            margin-top: 40px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             font-size: 8pt;
             color: #64748b;
             text-align: center;
@@ -239,11 +241,13 @@
                 </td>
 
                 <td class="contact">
-                    Kampus IPB Dramaga, Bogor 16680, Indonesia
+                    Kampus IPB Dramaga, Bogor 16680
                     <br>
                     Telp. 0251-8621677
                     <br>
-                    Email: kehutanan@apps.ipb.ac.id
+                    fahutan@apps.ipb.ac.id
+                    <br>
+                    fahutan.ipb.ac.id
                 </td>
             </tr>
         </table>
@@ -322,8 +326,7 @@
     </div>
 
     <div class="footer">
-        Dokumen ini diterbitkan secara elektronik melalui
-        Sistem Informasi Clearing Online (SICO).
+        Inspiring Innovation with Integrity
     </div>
 </body>
 
