@@ -13,21 +13,23 @@ use Illuminate\Support\Str;
 
 class SuratClearingService
 {
-
     public function preview(PengajuanClearing $pengajuan)
     {
         $pengajuan->load('user');
+
         $nomorSurat = $pengajuan->nomor_surat
             ?? 'DRAFT/SICO/' . date('Y') . '/' . $pengajuan->id;
 
+        // Simpan token kalau belum ada, supaya QR verify konsisten dgn DB
+        if (!$pengajuan->qr_token) {
+            $pengajuan->update([
+                'qr_token' => Str::random(64),
+            ]);
+        }
 
-        $token = $pengajuan->qr_token
-            ?? Str::random(64);
+        $token = $pengajuan->qr_token;
 
-
-        $verifyUrl = config('app.url')
-            . '/api/surat/verify/'
-            . $token;
+        $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -35,11 +37,8 @@ class SuratClearingService
         );
 
         $writer = new Writer($renderer);
-
         $qrSvg = $writer->writeString($verifyUrl);
-
         $qrCode = base64_encode($qrSvg);
-
 
         $surat = (object) [
             'nomor_surat' => $nomorSurat,
@@ -50,7 +49,6 @@ class SuratClearingService
         ];
 
         $signatureLabel = 'Pejabat yang Berwenang';
-
 
         return Pdf::loadView('surat.clearing', [
             'surat' => $surat,
@@ -63,23 +61,15 @@ class SuratClearingService
     {
         $pengajuan->load('user');
 
-
         $token = Str::random(64);
-
-
         $nomorSurat = 'SICO/' . date('Y') . '/' . $pengajuan->id;
-
 
         $pengajuan->update([
             'nomor_surat' => $nomorSurat,
             'qr_token' => $token,
         ]);
 
-
-        $verifyUrl = config('app.url')
-            . '/api/surat/verify/'
-            . $token;
-
+        $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -87,12 +77,9 @@ class SuratClearingService
         );
 
         $writer = new Writer($renderer);
-
         $qrSvg = $writer->writeString($verifyUrl);
-
         $qrCode = base64_encode($qrSvg);
 
-     
         $surat = (object) [
             'nomor_surat' => $nomorSurat,
             'nim' => $pengajuan->user->nim,
@@ -105,28 +92,20 @@ class SuratClearingService
 
         $signatureLabel = 'Pejabat yang Berwenang';
 
-        // Generate PDF dari Blade
         $pdf = Pdf::loadView('surat.clearing', [
             'surat' => $surat,
             'qrCode' => $qrCode,
             'signatureLabel' => $signatureLabel,
         ]);
 
-        // Lokasi penyimpanan surat
         $path = "clearing/{$pengajuan->id}/surat-clearing.pdf";
 
-        // Simpan PDF
-        Storage::disk('public')->put(
-            $path,
-            $pdf->output()
-        );
+        Storage::disk('public')->put($path, $pdf->output());
 
-        // Simpan lokasi file ke database
         $pengajuan->update([
             'file_surat' => $path,
         ]);
 
-        // Return data terbaru
         return $pengajuan->fresh();
     }
 }

@@ -18,4 +18,4 @@ class LaporanService
             ->when($filters['sampai_tanggal'] ?? null, fn ($q, $tgl) => $q->whereDate('created_at', '<=', $tgl))
             ->latest();
     }
-}
+} 
