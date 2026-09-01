@@ -140,7 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
             'reviewAtasan'
         ])->middleware('permission:verifikasi-atasan');
 
-
+        Route::get('/surat/qr/{token}', [PengajuanClearingController::class, 'showQR'])->name('surat.qr');
 
         Route::get('/{pengajuan}/download-surat', [
             PengajuanClearingController::class,

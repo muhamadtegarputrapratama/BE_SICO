@@ -196,6 +196,50 @@ class PengajuanClearingController extends Controller
         );
     }
 
+    public function showQR($token)
+    {
+        try {
+            $pengajuan = PengajuanClearing::where('qr_token', $token)->first();
+
+            if (!$pengajuan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'QR Code tidak ditemukan'
+                ], 404);
+            }
+
+            // Cek apakah QR Code sudah digenerate (file surat ada)
+            if (!$pengajuan->file_surat) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Surat belum tersedia'
+                ], 404);
+            }
+
+            // Generate ulang QR Code dari token yang sama
+            $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
+
+            $renderer = new \BaconQrCode\Renderer\ImageRenderer(
+                new \BaconQrCode\Renderer\RendererStyle\RendererStyle(200),
+                new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+            );
+
+            $writer = new \BaconQrCode\Writer($renderer);
+            $qrSvg = $writer->writeString($verifyUrl);
+
+            // Return sebagai gambar SVG
+            return response($qrSvg, 200)
+                ->header('Content-Type', 'image/svg+xml')
+                ->header('Content-Disposition', 'inline; filename="qr-code.svg"');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function previewSurat(Request $request, $pengajuan)
     {
         try {
