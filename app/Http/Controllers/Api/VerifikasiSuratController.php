@@ -20,6 +20,8 @@ class VerifikasiSuratController extends Controller
         }
 
         return $this->success('Surat valid.', [
+            'id' => $pengajuan->id,
+            'qr_token' => $pengajuan->qr_token,
             'nomor_surat' => $pengajuan->nomor_surat,
             'nama' => $pengajuan->user->nama,
             'nim' => $pengajuan->user->nim,

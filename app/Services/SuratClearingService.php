@@ -29,7 +29,7 @@ class SuratClearingService
 
         $token = $pengajuan->qr_token;
 
-        $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
+        $verifyUrl = config('app.frontend_url') . '/verifikasi-qr/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
