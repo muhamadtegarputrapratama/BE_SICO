@@ -108,4 +108,26 @@ class SuratClearingService
 
         return $pengajuan->fresh();
     }
+
+    public function generateQR(PengajuanClearing $pengajuan)
+    {
+        if (!$pengajuan->qr_token) {
+            abort(404, 'QR Code belum tersedia.');
+        }
+
+        $verifyUrl = config('app.url') . '/api/surat/verify/' . $pengajuan->qr_token;
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
+        );
+
+        $writer = new Writer($renderer);
+
+        $qrSvg = $writer->writeString($verifyUrl);
+
+        return response($qrSvg)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
 }

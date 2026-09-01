@@ -22,6 +22,7 @@ class PengajuanClearingController extends Controller
         protected PengajuanClearingService $service,
         protected SuratClearingService $suratService
     ) {
+        $this->suratService = $suratService;
     }
 
     public function index(Request $request): JsonResponse
@@ -196,48 +197,27 @@ class PengajuanClearingController extends Controller
         );
     }
 
-    public function showQR($token)
+    public function showQR($pengajuan)
     {
-        try {
-            $pengajuan = PengajuanClearing::where('qr_token', $token)->first();
+        $pengajuanModel = PengajuanClearing::find($pengajuan);
 
-            if (!$pengajuan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'QR Code tidak ditemukan'
-                ], 404);
-            }
-
-            // Cek apakah QR Code sudah digenerate (file surat ada)
-            if (!$pengajuan->file_surat) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Surat belum tersedia'
-                ], 404);
-            }
-
-            // Generate ulang QR Code dari token yang sama
-            $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
-
-            $renderer = new \BaconQrCode\Renderer\ImageRenderer(
-                new \BaconQrCode\Renderer\RendererStyle\RendererStyle(200),
-                new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+        if (!$pengajuanModel) {
+            return $this->error(
+                'Data pengajuan tidak ditemukan.',
+                null,
+                404
             );
-
-            $writer = new \BaconQrCode\Writer($renderer);
-            $qrSvg = $writer->writeString($verifyUrl);
-
-            // Return sebagai gambar SVG
-            return response($qrSvg, 200)
-                ->header('Content-Type', 'image/svg+xml')
-                ->header('Content-Disposition', 'inline; filename="qr-code.svg"');
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
         }
+
+        if (!$pengajuanModel->qr_token) {
+            return $this->error(
+                'QR Code belum tersedia.',
+                null,
+                404
+            );
+        }
+
+        return $this->suratService->generateQR($pengajuanModel);
     }
 
     public function previewSurat(Request $request, $pengajuan)

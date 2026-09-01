@@ -133,22 +133,21 @@ Route::middleware('auth:sanctum')->group(function () {
             'previewSurat'
         ]);
 
-
-
         Route::post('/{pengajuan}/review-atasan', [
             PengajuanClearingController::class,
             'reviewAtasan'
         ])->middleware('permission:verifikasi-atasan');
 
-        Route::get('/surat/qr/{token}', [PengajuanClearingController::class, 'showQR'])->name('surat.qr');
+        Route::get('/pengajuan-clearing/{pengajuan}/qr', [
+            PengajuanClearingController::class,
+            'showQR'
+        ])->name('pengajuan-clearing.qr');
 
         Route::get('/{pengajuan}/download-surat', [
             PengajuanClearingController::class,
             'downloadSurat'
         ]);
     });
-
-
 
 
     Route::prefix('laporan')
