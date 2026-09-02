@@ -29,7 +29,8 @@ class SuratClearingService
 
         $token = $pengajuan->qr_token;
 
-        $verifyUrl = config('app.frontend_url') . '/verifikasi-qr/' . $token;
+        // QR arahkan ke endpoint file (biar konsisten sama generate())
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -69,13 +70,13 @@ class SuratClearingService
             'qr_token' => $token,
         ]);
 
-        $verifyUrl = config('app.url') . '/api/surat/verify/' . $token;
+        // QR arahkan ke endpoint publik yang nampilin FILE PDF langsung
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
             new SvgImageBackEnd()  
         );
-
         $writer = new Writer($renderer);
         $qrSvg = $writer->writeString($verifyUrl);
         $qrCode = base64_encode($qrSvg);
@@ -99,7 +100,6 @@ class SuratClearingService
         ]);
 
         $path = "clearing/{$pengajuan->id}/surat-clearing.pdf";
-
         Storage::disk('public')->put($path, $pdf->output());
 
         $pengajuan->update([
@@ -107,5 +107,20 @@ class SuratClearingService
         ]);
 
         return $pengajuan->fresh();
+    }
+
+    public function generateQR(PengajuanClearing $pengajuan)
+    {
+        // Konsisten juga arahkan ke endpoint file, bukan langsung ke storage
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $pengajuan->qr_token;
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(300),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $qrSvg = $writer->writeString($verifyUrl);
+
+        return response($qrSvg, 200)->header('Content-Type', 'image/svg+xml');
     }
 }
