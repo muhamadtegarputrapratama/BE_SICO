@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PengajuanClearing;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class VerifikasiSuratController extends Controller
 {
@@ -29,5 +30,22 @@ class VerifikasiSuratController extends Controller
             'departemen' => $pengajuan->departemen,
             'diterbitkan_pada' => $pengajuan->disetujui_atasan_at?->format('d-m-Y H:i'),
         ]);
+    }
+
+    public function file(string $token)
+    {
+        $pengajuan = PengajuanClearing::where('qr_token', $token)->first();
+
+        if (! $pengajuan || ! $pengajuan->file_surat) {
+            abort(404, 'Surat tidak ditemukan atau tidak valid.');
+        }
+
+        if (! Storage::disk('public')->exists($pengajuan->file_surat)) {
+            abort(404, 'File surat tidak ditemukan.');
+        }
+
+        return response()->file(
+            Storage::disk('public')->path($pengajuan->file_surat)
+        );
     }
 }

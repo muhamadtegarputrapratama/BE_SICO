@@ -46,6 +46,11 @@ Route::get('/surat/verify/{token}', [
     'verify'
 ])->name('surat.verify');
 
+Route::get('/surat/file/{token}', [
+    VerifikasiSuratController::class,
+    'file'
+])->name('surat.file');
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
