@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Enums\BebasPustakaStatus;
 use App\Enums\PengajuanClearingStatus;
 use App\Models\BebasPustaka;
+use App\Models\Notifikasi;
 use App\Models\PengajuanClearing;
 use App\Models\User;
 use App\Traits\LogsActivity;
@@ -175,16 +176,21 @@ class PengajuanClearingService
 
     protected function notifikasiAtasan(PengajuanClearing $pengajuan): void
     {
-        $atasan = User::role('atasan')->first();
+        $atasanList = User::role('atasan')->get();
 
-        if (! $atasan) {
+        if ($atasanList->isEmpty()) {
             return;
         }
 
-        $atasan->notifikasi()->create([
+        $rows = $atasanList->map(fn (User $atasan) => [
+            'user_id' => $atasan->id,
             'judul' => 'Pengajuan Clearing Menunggu Persetujuan',
             'pesan' => "Pengajuan clearing #{$pengajuan->id} atas nama {$pengajuan->user->nama} telah diverifikasi admin dan menunggu persetujuan Anda.",
-        ]);
+            'dibaca' => false,
+            'created_at' => now(),
+        ])->all();
+
+        Notifikasi::insert($rows);
     }
 
     protected function simpanFile(UploadedFile $file, int $userId, string $label): string

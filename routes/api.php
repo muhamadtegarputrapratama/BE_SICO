@@ -8,9 +8,7 @@ use App\Http\Controllers\Api\BebasPustakaController;
 use App\Http\Controllers\Api\PengajuanClearingController;
 use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\Api\VerifikasiSuratController;
-
-
-
+use App\Http\Controllers\Api\NotifikasiController;
 
 Route::prefix('auth')->group(function () {
 
@@ -146,6 +144,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{pengajuan}/download-surat', [
             PengajuanClearingController::class,
             'downloadSurat'
+        ]);
+    });
+
+    Route::prefix('notifikasi')->group(function () {
+
+        Route::get('/', [
+            NotifikasiController::class,
+            'index'
+        ]);
+
+        Route::get('/unread-count', [
+            NotifikasiController::class,
+            'unreadCount'
+        ]);
+
+        Route::post('/{id}/read', [
+            NotifikasiController::class,
+            'markRead'
+        ]);
+
+        Route::post('/read-all', [
+            NotifikasiController::class,
+            'markAllRead'
         ]);
     });
 

@@ -73,7 +73,7 @@ class SuratClearingService
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd()
+            new SvgImageBackEnd()  
         );
 
         $writer = new Writer($renderer);
