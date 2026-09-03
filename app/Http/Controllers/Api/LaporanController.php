@@ -26,8 +26,9 @@ class LaporanController extends Controller
         }
 
         $filters = $request->only(['status', 'program_studi', 'dari_tanggal', 'sampai_tanggal']);
+        $perPage = $request->input('per_page', 20); // default 20, tapi bisa di-override
 
-        return $this->success('Laporan berhasil diambil.', $this->service->query($filters)->paginate(20));
+        return $this->success('Laporan berhasil diambil.', $this->service->query($filters)->paginate($perPage));
     }
 
     public function export(Request $request)

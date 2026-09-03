@@ -28,6 +28,7 @@ class PengajuanClearingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $perPage = $request->input('per_page', 15); // default 15, tapi bisa di-override
 
         $query = PengajuanClearing::with([
             'user',
@@ -47,7 +48,7 @@ class PengajuanClearingController extends Controller
 
         return $this->success(
             'Data pengajuan clearing berhasil diambil.',
-            $query->paginate(15)
+            $query->paginate($perPage)
         );
     }
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -21,12 +22,13 @@ class BebasPustakaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $perPage = $request->input('per_page', 15); // default 15, tapi bisa di-override
 
         $query = $user->hasAnyRole(['pustakawan', 'atasan'])
             ? BebasPustaka::with('user')->latest()
             : BebasPustaka::with('user')->where('user_id', $user->id)->latest();
 
-        return $this->success('Data bebas pustaka berhasil diambil.', $query->paginate(15));
+        return $this->success('Data bebas pustaka berhasil diambil.', $query->paginate($perPage));
     }
 
     public function store(StoreBebasPustakaRequest $request): JsonResponse
