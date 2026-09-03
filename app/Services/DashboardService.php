@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\PengajuanClearing;
 
 class DashboardService
 {
@@ -55,21 +56,26 @@ class DashboardService
         ];
     }
 
-    protected function atasanDashboard(User $user): array
-    {
-        return [
-            'role' => 'atasan',
-            'greeting' => 'Selamat datang, ' . $user->nama,
-            'statistik' => [
-                'surat_perlu_ttd' => 0,
-                'total_surat_ditandatangani' => 0,
-            ],
-            'menu' => [
-                'tanda_tangan_surat',
-                'riwayat_persetujuan',
-            ],
-        ];
-    }
+   protected function atasanDashboard(User $user): array
+{
+    $total = PengajuanClearing::count();
+    $disetujui = PengajuanClearing::where('status', 'disetujui')->count();
+    $ditolak = PengajuanClearing::where('status', 'ditolak')->count();
+
+    return [
+        'role' => 'atasan',
+        'greeting' => 'Selamat datang, ' . $user->nama,
+        'statistik' => [
+            'total_pengajuan' => $total,
+            'sudah_disetujui' => $disetujui,
+            'sudah_ditolak' => $ditolak,
+        ],
+        'menu' => [
+            'tanda_tangan_surat',
+            'riwayat_persetujuan',
+        ],
+    ];
+}
 
     protected function pustakawanDashboard(User $user): array
     {
