@@ -29,7 +29,7 @@ class LaporanController extends Controller
         $perPage = $request->input('per_page', 20); // default 20, tapi bisa di-override
 
         return $this->success('Laporan berhasil diambil.', $this->service->query($filters)->paginate($perPage));
-    }
+    } 
 
     public function export(Request $request)
     {
