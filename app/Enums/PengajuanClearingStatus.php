@@ -8,7 +8,6 @@ enum PengajuanClearingStatus: string
     case REVISI_ADMIN = 'revisi_admin';
     case DIVERIFIKASI_ADMIN = 'diverifikasi_admin'; //menunggu atasan menyetujui
     case DISETUJUI = 'disetujui'; //disetujui atasan
-    case DITOLAK = 'ditolak';
 
     public function label(): string 
     {
@@ -17,13 +16,12 @@ enum PengajuanClearingStatus: string
             self::REVISI_ADMIN => 'Perlu revisi admin',
             self::DIVERIFIKASI_ADMIN => 'Menunggu persetujuan atasan',
             self::DISETUJUI => 'Disetujui',
-            self::DITOLAK => 'Ditolak',
         };
     }
 
     public function isFinal(): bool 
     {
-        return in_array($this, [self::DISETUJUI, self::DITOLAK]);
+        return $this === self::DISETUJUI;
     }
 
 }
