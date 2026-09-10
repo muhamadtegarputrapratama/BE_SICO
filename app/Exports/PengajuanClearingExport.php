@@ -32,7 +32,7 @@ class PengajuanClearingExport implements FromCollection, WithHeadings, WithMappi
             'No',           // Mengganti ID menjadi Nomor Urut
             'ID Pengajuan', // Kolom ID database (opsional, hapus jika tidak diperlukan)
             'Nama', 'NIM', 'Departemen', 'Program Studi',
-            'Status', 'Nomor Surat', 
+            'Status', 'Nomor Surat',
             'Foto KTM', 'Bukti Pembayaran', 'File Distribusi', // Kolom I, J, K
             'Diverifikasi Admin', 'Disetujui Atasan', 'Catatan Revisi', 'Tanggal Diajukan',
         ];
@@ -48,9 +48,8 @@ class PengajuanClearingExport implements FromCollection, WithHeadings, WithMappi
             $pengajuan->user?->nama ?? $pengajuan->user?->name ?? '-',
             $pengajuan->user?->nim ?? '-',
             $pengajuan->departemen ?? '-',
-            $pengajuan->program_studi ?? '-',
-            is_object($pengajuan->status) && method_exists($pengajuan->status, 'label') 
-                ? $pengajuan->status->label() 
+            is_object($pengajuan->status) && method_exists($pengajuan->status, 'label')
+                ? $pengajuan->status->label()
                 : $pengajuan->status,
             $pengajuan->nomor_surat ?? '-',
             '', // Tempat Foto KTM (Kolom I)
@@ -114,7 +113,7 @@ class PengajuanClearingExport implements FromCollection, WithHeadings, WithMappi
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $rowCount = count($this->pengajuanCollection);
-                
+
                 // Set tinggi baris data agar gambar muat dengan rapi
                 for ($row = 2; $row <= ($rowCount + 1); $row++) {
                     $event->sheet->getDelegate()->getRowDimension($row)->setRowHeight(40);

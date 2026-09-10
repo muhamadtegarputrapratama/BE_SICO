@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('bebas_pustaka_id')->unique()->constrained('bebas_pustaka')->cascadeOnDelete();
             $table->string('departemen');
-            $table->string('program_studi');
+            $table->string('');
             $table->string('file_ktm');
             $table->string('file_bukti_spp');
             $table->string('file_distribusi');

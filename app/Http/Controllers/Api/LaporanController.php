@@ -25,11 +25,11 @@ class LaporanController extends Controller
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
-        $filters = $request->only(['status', 'program_studi', 'dari_tanggal', 'sampai_tanggal']);
+        $filters = $request->only(['status', '', 'dari_tanggal', 'sampai_tanggal']);
         $perPage = $request->input('per_page', 20); // default 20, tapi bisa di-override
 
         return $this->success('Laporan berhasil diambil.', $this->service->query($filters)->paginate($perPage));
-    } 
+    }
 
     public function export(Request $request)
     {
@@ -37,7 +37,7 @@ class LaporanController extends Controller
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
-        $filters = $request->only(['status', 'program_studi', 'dari_tanggal', 'sampai_tanggal']);
+        $filters = $request->only(['status', '', 'dari_tanggal', 'sampai_tanggal']);
 
         return Excel::download(
             new PengajuanClearingExport($filters),

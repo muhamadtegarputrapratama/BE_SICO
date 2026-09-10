@@ -39,7 +39,7 @@ class PengajuanClearingService
             'user_id' => $user->id,
             'bebas_pustaka_id' => $bebasPustaka->id,
             'departemen' => $data['departemen'],
-            'program_studi' => $data['program_studi'],
+            '' => $data[''],
             'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
             'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
             'file_distribusi' => $this->simpanFile($data['file_distribusi'], $user->id, 'distribusi'),
@@ -61,7 +61,6 @@ class PengajuanClearingService
 
         $payload = [
             'departemen' => $data['departemen'] ?? $pengajuan->departemen,
-            'program_studi' => $data['program_studi'] ?? $pengajuan->program_studi,
             'status' => PengajuanClearingStatus::DIAJUKAN,
             'catatan_revisi' => null,
             'direview_admin_oleh' => null,

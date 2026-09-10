@@ -15,7 +15,7 @@ class PengajuanClearing extends Model
         'user_id',
         'bebas_pustaka_id',
         'departemen',
-        'program_studi',
+        '',
         'file_ktm',
         'file_bukti_spp',
         'file_distribusi',

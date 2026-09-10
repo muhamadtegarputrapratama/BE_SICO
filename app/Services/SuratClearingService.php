@@ -75,7 +75,7 @@ class SuratClearingService
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd()  
+            new SvgImageBackEnd()
         );
         $writer = new Writer($renderer);
         $qrSvg = $writer->writeString($verifyUrl);
@@ -86,7 +86,6 @@ class SuratClearingService
             'nim' => $pengajuan->user->nim,
             'nama' => $pengajuan->user->nama,
             'departemen' => $pengajuan->departemen,
-            'program_studi' => $pengajuan->program_studi,
             'keperluan' => 'Keperluan administrasi akademik.',
             'tanggal_surat' => now(),
         ];

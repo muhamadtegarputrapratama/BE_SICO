@@ -26,7 +26,6 @@ class VerifikasiSuratController extends Controller
             'nomor_surat' => $pengajuan->nomor_surat,
             'nama' => $pengajuan->user->nama,
             'nim' => $pengajuan->user->nim,
-            'program_studi' => $pengajuan->program_studi,
             'departemen' => $pengajuan->departemen,
             'diterbitkan_pada' => $pengajuan->disetujui_atasan_at?->format('d-m-Y H:i'),
         ]);

@@ -13,9 +13,9 @@ class LaporanService
         return PengajuanClearing::query()
             ->with(['user', 'admin', 'atasan', 'bebasPustaka'])
             ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
-            ->when($filters['program_studi'] ?? null, fn ($q, $prodi) => $q->where('program_studi', $prodi))
+            ->when($filters[''] ?? null, fn ($q, $prodi) => $q->where('', $prodi))
             ->when($filters['dari_tanggal'] ?? null, fn ($q, $tgl) => $q->whereDate('created_at', '>=', $tgl))
             ->when($filters['sampai_tanggal'] ?? null, fn ($q, $tgl) => $q->whereDate('created_at', '<=', $tgl))
             ->latest();
     }
-} 
+}
