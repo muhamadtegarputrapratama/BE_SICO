@@ -292,21 +292,13 @@
             </div>
 
             <div class="signature-position">
-                Kabag TU
+                Kepala Bagian Tata Usaha
             </div>
 
             <table class="signature-table">
                 <tr>
                     <td class="qr-cell">
                         <img src="data:image/svg+xml;base64,{{ $qrCode }}" class="qr">
-                    </td>
-
-                    <td class="ttd-cell">
-                        <div class="signature-box">
-                            @if (isset($signatureImage) && $signatureImage)
-                                <img src="{{ $signatureImage }}" class="signature-image">
-                            @endif
-                        </div>
                     </td>
                 </tr>
 
