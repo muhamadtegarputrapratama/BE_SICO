@@ -16,7 +16,6 @@ class StorePengajuanClearingRequest extends FormRequest
     {
         return [
             'departemen' => ['required', 'string', 'max:255'],
-            '' => ['required', 'string', 'max:255'],
             'file_ktm' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_bukti_spp' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_distribusi' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
@@ -27,7 +26,6 @@ class StorePengajuanClearingRequest extends FormRequest
     {
         return [
             'departemen.required' => 'Departemen wajib diisi.',
-            '.required' => 'Program studi wajib diisi.',
             'file_ktm.required' => 'File KTM wajib diunggah.',
             'file_bukti_spp.required' => 'File bukti pembayaran SPP wajib diunggah.',
             'file_distribusi.required' => 'File distribusi wajib diunggah.',

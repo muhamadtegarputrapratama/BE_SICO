@@ -39,7 +39,6 @@ class PengajuanClearingService
             'user_id' => $user->id,
             'bebas_pustaka_id' => $bebasPustaka->id,
             'departemen' => $data['departemen'],
-            '' => $data[''],
             'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
             'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
             'file_distribusi' => $this->simpanFile($data['file_distribusi'], $user->id, 'distribusi'),
