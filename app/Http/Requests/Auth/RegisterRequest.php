@@ -15,8 +15,8 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama' => ['required', 'string', 'max:255'],
-            'nim' => ['required', 'string', 'alpha_num', 'max:20', 'unique:users,nim'],
+            'nama' => ['required', 'string', 'max:255', 'regex:/^\p{Lu}/u'],
+            'nim' => ['required', 'string', 'max:20', 'regex:/^E[A-Za-z0-9]+$/', 'unique:users,nim'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
         ];
@@ -26,11 +26,12 @@ class RegisterRequest extends FormRequest
     {
         return [
             'nama.required' => 'Nama wajib diisi.',
+            'nama.regex' => 'Huruf pertama nama harus kapital.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email sudah terdaftar.',
             'nim.required' => 'NIM wajib diisi.',
-            'nim.alpha_num' => 'NIM hanya boleh berisi huruf dan angka.',
+            'nim.regex' => 'NIM harus diawali huruf E kapital, diikuti huruf atau angka.',
             'nim.unique' => 'NIM sudah terdaftar.',
             'password.required' => 'Password wajib diisi.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',

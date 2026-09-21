@@ -1,4 +1,5 @@
 <?php
+// app/Services/PengajuanClearingService.php
 
 namespace App\Services;
 
@@ -39,6 +40,7 @@ class PengajuanClearingService
             'user_id' => $user->id,
             'bebas_pustaka_id' => $bebasPustaka->id,
             'departemen' => $data['departemen'],
+            'program_studi' => $data['program_studi'],
             'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
             'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
             'file_distribusi' => $this->simpanFile($data['file_distribusi'], $user->id, 'distribusi'),
@@ -60,6 +62,7 @@ class PengajuanClearingService
 
         $payload = [
             'departemen' => $data['departemen'] ?? $pengajuan->departemen,
+            'program_studi' => $data['program_studi'] ?? $pengajuan->program_studi,
             'status' => PengajuanClearingStatus::DIAJUKAN,
             'catatan_revisi' => null,
             'direview_admin_oleh' => null,
@@ -89,10 +92,10 @@ class PengajuanClearingService
             ]);
         }
 
-        // DITOLAK dihapus, hanya ada 'setuju' atau 'revisi'
         $status = match ($keputusan) {
             'setuju' => PengajuanClearingStatus::DIVERIFIKASI_ADMIN,
             'revisi' => PengajuanClearingStatus::REVISI_ADMIN,
+            'tolak' => PengajuanClearingStatus::DITOLAK,
             default => throw ValidationException::withMessages([
                 'keputusan' => ['Keputusan tidak valid.'],
             ]),
@@ -116,8 +119,16 @@ class PengajuanClearingService
 
     public function reviewAtasan(
         PengajuanClearing $pengajuan,
-        User $atasan
+        User $atasan,
+        string $keputusan,
+        ?string $catatan = null
     ): PengajuanClearing {
+
+        if (! in_array($keputusan, ['setuju', 'tolak'], true)) {
+            throw ValidationException::withMessages([
+                'keputusan' => ['Atasan hanya dapat menyetujui atau menolak pengajuan.'],
+            ]);
+        }
 
         if ($pengajuan->status !== PengajuanClearingStatus::DIVERIFIKASI_ADMIN) {
             throw ValidationException::withMessages([
@@ -125,7 +136,24 @@ class PengajuanClearingService
             ]);
         }
 
-        // Langsung proses persetujuan (karena tidak ada opsi ditolak)
+        // Kalau ditolak
+        if ($keputusan === 'tolak') {
+            $pengajuan->update([
+                'status' => PengajuanClearingStatus::DITOLAK,
+                'catatan_revisi' => $catatan,
+                'disetujui_atasan_oleh' => $atasan->id,
+                'disetujui_atasan_at' => now(),
+            ]);
+
+            $this->logActivity(
+                $atasan,
+                "Menolak pengajuan clearing #{$pengajuan->id}"
+            );
+
+            return $pengajuan->fresh();
+        }
+
+        // Kalau disetujui
         $pengajuan->update([
             'status' => PengajuanClearingStatus::DISETUJUI,
             'catatan_revisi' => null,
@@ -167,15 +195,17 @@ class PengajuanClearingService
 
     protected function simpanFile(UploadedFile $file, int $userId, string $label): string
     {
+        // Ganti 'local' menjadi 'public'
         return $file->store("clearing/{$userId}", 'public') ?: throw ValidationException::withMessages([
             'file' => ["Gagal menyimpan file {$label}."],
         ]);
     }
 
     protected function hapusFileLama(?string $path): void
-    {
+    { 
+        // Ganti 'local' menjadi 'public'
         if ($path && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
-        }
+        } 
     }
 }
