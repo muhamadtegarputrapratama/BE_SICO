@@ -84,6 +84,12 @@ Route::middleware('auth:sanctum')->group(function () {
             BebasPustakaController::class,
             'ajukanUlang'
         ])->middleware('role:mahasiswa');
+
+        // Download skripsi (pemilik, pustakawan, atasan; dicek di controller)
+        Route::get('/{bebasPustaka}/download', [
+            BebasPustakaController::class,
+            'download'
+        ]);
     });
 
     Route::prefix('pengajuan-clearing')->group(function () {

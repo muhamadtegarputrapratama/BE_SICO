@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Traits\LogsActivity;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
@@ -57,7 +58,10 @@ class AuthService
     public function logout(User $user): void
     {
         $this->logActivity($user, 'Logout dari sistem');
+        $token = $user->currentAccessToken();
 
-        $user->currentAccessToken()->delete();
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        }
     }
 }

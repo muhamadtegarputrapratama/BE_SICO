@@ -60,7 +60,19 @@ class BebasPustakaController extends Controller
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
-        $bebasPustaka = $this->service->ajukanUlang($bebasPustaka, $request->user());
+        $request->validate([
+            'file_skripsi' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+        ], [
+            'file_skripsi.mimes' => 'File skripsi harus berformat PDF.',
+            'file_skripsi.max' => 'Ukuran file skripsi maksimal 10 MB.',
+            'file_skripsi.uploaded' => 'File gagal diunggah. Ukuran melebihi batas server.',
+        ]);
+
+        $bebasPustaka = $this->service->ajukanUlang(
+            $bebasPustaka,
+            $request->user(),
+            $request->file('file_skripsi')
+        );
 
         return $this->success('Pengajuan bebas pustaka berhasil diajukan ulang.', $bebasPustaka);
     }
