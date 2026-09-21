@@ -63,6 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('bebas-pustaka')->group(function () {
 
 
+    Route::get('/', [BebasPustakaController::class, 'index']);
+    Route::post('/', [BebasPustakaController::class, 'store'])->middleware('role:mahasiswa');
+    Route::post('/{bebasPustaka}/review', [BebasPustakaController::class, 'review'])->middleware('permission:verifikasi-pustaka');
+    Route::post('/{bebasPustaka}/ajukan-ulang', [BebasPustakaController::class, 'ajukanUlang'])->middleware('role:mahasiswa');
+    Route::get('/{bebasPustaka}/preview-skripsi', [BebasPustakaController::class, 'previewSkripsi']);
+
+
         Route::get('/', [
             BebasPustakaController::class,
             'index'

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BebasPustaka\AjukanUlangBebasPustakaRequest;
 use App\Http\Requests\BebasPustaka\StoreBebasPustakaRequest;
 use App\Http\Requests\ReviewRequest;
 use App\Models\BebasPustaka;
@@ -10,6 +11,7 @@ use App\Services\BebasPustakaService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BebasPustakaController extends Controller
 {
@@ -22,7 +24,7 @@ class BebasPustakaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $perPage = $request->input('per_page', 15); // default 15, tapi bisa di-override
+        $perPage = $request->input('per_page', 15);
 
         $query = $user->hasAnyRole(['pustakawan', 'atasan'])
             ? BebasPustaka::with('user')->latest()
@@ -33,7 +35,7 @@ class BebasPustakaController extends Controller
 
     public function store(StoreBebasPustakaRequest $request): JsonResponse
     {
-        $bebasPustaka = $this->service->ajukan($request->user());
+        $bebasPustaka = $this->service->ajukan($request->user(), $request->file('file_skripsi'));
 
         return $this->success('Pengajuan bebas pustaka berhasil dibuat.', $bebasPustaka, 201);
     }
@@ -54,7 +56,7 @@ class BebasPustakaController extends Controller
         return $this->success('Review bebas pustaka berhasil disimpan.', $bebasPustaka);
     }
 
-    public function ajukanUlang(Request $request, BebasPustaka $bebasPustaka): JsonResponse
+    public function ajukanUlang(AjukanUlangBebasPustakaRequest $request, BebasPustaka $bebasPustaka): JsonResponse
     {
         if ($bebasPustaka->user_id !== $request->user()->id) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
@@ -75,5 +77,24 @@ class BebasPustakaController extends Controller
         );
 
         return $this->success('Pengajuan bebas pustaka berhasil diajukan ulang.', $bebasPustaka);
+    }
+
+    public function previewSkripsi(Request $request, BebasPustaka $bebasPustaka)
+    {
+        $user = $request->user();
+
+        $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
+
+        if (! $bolehAkses) {
+            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+        }
+
+        if (! $bebasPustaka->file_skripsi || ! Storage::disk('public')->exists($bebasPustaka->file_skripsi)) {
+            return $this->error('File skripsi tidak ditemukan.', null, 404);
+        }
+
+        return response()->file(
+            Storage::disk('public')->path($bebasPustaka->file_skripsi)
+        );
     }
 }

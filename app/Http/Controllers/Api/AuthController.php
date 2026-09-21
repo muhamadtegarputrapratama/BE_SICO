@@ -35,7 +35,7 @@ class AuthController extends Controller
             $validated['login'],
             $validated['password'],
         );
-
+    
         return $this->success('Login berhasil.', [
             'user' => new UserResource($result['user']),
             'token' => $result['token'],

@@ -29,4 +29,13 @@ class StoreBebasPustakaRequest extends FormRequest
             'file_skripsi.uploaded' => 'File gagal diunggah. Ukuran melebihi batas server.',
         ];
     }
+
+     public function messages(): array
+    {
+        return [
+            'file_skripsi.required' => 'File skripsi wajib diunggah.',
+            'file_skripsi.mimes' => 'File skripsi harus berformat PDF.',
+            'file_skripsi.max' => 'Ukuran file skripsi maksimal 5MB.',
+        ];
+    }
 }

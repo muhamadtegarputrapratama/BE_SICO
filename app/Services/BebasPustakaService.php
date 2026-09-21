@@ -48,7 +48,7 @@ class BebasPustakaService
             return $bebasPustaka;
         });
     }
-  
+
     public function review(BebasPustaka $bebasPustaka, User $pustakawan, string $keputusan, ?string $catatan): BebasPustaka
     {
         if ($bebasPustaka->status !== BebasPustakaStatus::DIAJUKAN) {
@@ -75,21 +75,52 @@ class BebasPustakaService
         return $bebasPustaka->fresh();
     }
 
-    public function ajukanUlang(BebasPustaka $bebasPustaka, User $user): BebasPustaka
+    public function ajukanUlang(BebasPustaka $bebasPustaka, User $mahasiswa, UploadedFile $fileSkripsi): BebasPustaka
     {
-        if ($bebasPustaka->status !== BebasPustakaStatus::REVISI) {
+        if (! in_array($bebasPustaka->status, [BebasPustakaStatus::REVISI, BebasPustakaStatus::DISETUJUI])) {
             throw ValidationException::withMessages([
-                'status' => ['Pengajuan ini tidak dalam status revisi.'],
+                'status' => ['Pengajuan ini tidak dapat diajukan ulang pada status saat ini.'],
             ]);
         }
 
-        $bebasPustaka->update([
-            'status' => BebasPustakaStatus::DIAJUKAN,
-            'catatan_revisi' => null,
-        ]);
+        // Cegah ganti file kalau sudah dipakai untuk pengajuan clearing
+        if ($bebasPustaka->status === BebasPustakaStatus::DISETUJUI && $bebasPustaka->pengajuanClearing()->exists()) {
+            throw ValidationException::withMessages([
+                'bebas_pustaka' => ['Bebas pustaka ini sudah dipakai untuk pengajuan clearing dan tidak dapat diubah lagi.'],
+            ]);
+        }
 
-        $this->logActivity($user, "Mengajukan ulang bebas pustaka #{$bebasPustaka->id}");
+        return DB::transaction(function () use ($bebasPustaka, $mahasiswa, $fileSkripsi) {
+            $fileLama = $bebasPustaka->file_skripsi;
 
-        return $bebasPustaka->fresh();
+            $bebasPustaka->update([
+                'file_skripsi' => $this->simpanFile($fileSkripsi, $mahasiswa->id),
+                'status' => BebasPustakaStatus::DIAJUKAN,
+                'catatan_revisi' => null,
+                'direview_oleh' => null,
+                'direview_at' => null,
+            ]);
+
+            $this->hapusFileLama($fileLama);
+
+            $this->logActivity($mahasiswa, "Mengajukan ulang file skripsi bebas pustaka #{$bebasPustaka->id}");
+
+            return $bebasPustaka->fresh();
+        });
+    }
+
+    protected function simpanFile(UploadedFile $file, int $userId): string
+    {
+        return $file->store("bebas-pustaka/{$userId}", 'public')
+            ?: throw ValidationException::withMessages([
+                'file_skripsi' => ['Gagal menyimpan file skripsi.'],
+            ]);
+    }
+
+    protected function hapusFileLama(?string $path): void
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

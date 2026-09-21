@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Enums\BebasPustakaStatus;
@@ -6,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class BebasPustaka extends Model
 {
@@ -13,6 +15,7 @@ class BebasPustaka extends Model
 
     protected $fillable = [
         'user_id',
+        'file_skripsi',
         'status',
         'file_skripsi',
         'catatan_revisi',
