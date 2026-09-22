@@ -58,7 +58,7 @@ class BebasPustakaService
                 throw $e;
             }
 
-            // $this->logActivity($user, 'Mengajukan bebas pustaka');
+            $this->logActivity($user, 'Mengajukan bebas pustaka');
 
             return $bebasPustaka;
         });
