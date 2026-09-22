@@ -1,26 +1,28 @@
 <?php
-// app/Services/BebasPustakaService.php
+
 namespace App\Services;
 
 use App\Enums\BebasPustakaStatus;
 use App\Models\BebasPustaka;
 use App\Models\User;
 use App\Traits\LogsActivity;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class BebasPustakaService
 {
     use LogsActivity;
 
-    public function ajukan(User $user): BebasPustaka
+    public function ajukan(User $user, UploadedFile $fileSkripsi): BebasPustaka
     {
-        return DB::transaction(function () use ($user) {
+        return DB::transaction(function () use ($user, $fileSkripsi) {
             $pengajuanTerakhir = BebasPustaka::where('user_id', $user->id)
                 ->whereIn('status', [
                     BebasPustakaStatus::DIAJUKAN,
                     BebasPustakaStatus::REVISI,
-                    BebasPustakaStatus::DISETUJUI, // NEW
+                    BebasPustakaStatus::DISETUJUI,
                 ])
                 ->lockForUpdate()
                 ->latest()
@@ -40,10 +42,11 @@ class BebasPustakaService
 
             $bebasPustaka = BebasPustaka::create([
                 'user_id' => $user->id,
+                'file_skripsi' => $this->simpanFile($fileSkripsi, $user->id),
                 'status' => BebasPustakaStatus::DIAJUKAN,
             ]);
 
-            // $this->logActivity($user, 'Mengajukan bebas pustaka');
+            $this->logActivity($user, 'Mengajukan bebas pustaka');
 
             return $bebasPustaka;
         });
@@ -75,6 +78,7 @@ class BebasPustakaService
         return $bebasPustaka->fresh();
     }
 
+
     public function ajukanUlang(BebasPustaka $bebasPustaka, User $mahasiswa, UploadedFile $fileSkripsi): BebasPustaka
     {
         if (! in_array($bebasPustaka->status, [BebasPustakaStatus::REVISI, BebasPustakaStatus::DISETUJUI])) {
@@ -83,7 +87,6 @@ class BebasPustakaService
             ]);
         }
 
-        // Cegah ganti file kalau sudah dipakai untuk pengajuan clearing
         if ($bebasPustaka->status === BebasPustakaStatus::DISETUJUI && $bebasPustaka->pengajuanClearing()->exists()) {
             throw ValidationException::withMessages([
                 'bebas_pustaka' => ['Bebas pustaka ini sudah dipakai untuk pengajuan clearing dan tidak dapat diubah lagi.'],
