@@ -36,6 +36,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function setNamaAttribute($value)
+    {
+        $this->attributes['nama'] = ucwords(strtolower($value));
+    }
+
+    public function setNimAttribute($value)
+    {
+        $this->attributes['nim'] = ucfirst(strtolower($value));
+    }
+
      public function notifikasi(): HasMany
     {
         return $this->hasMany(Notifikasi::class);
