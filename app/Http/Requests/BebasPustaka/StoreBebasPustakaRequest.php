@@ -4,7 +4,7 @@ namespace App\Http\Requests\BebasPustaka;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AjukanUlangBebasPustakaRequest extends FormRequest
+class StoreBebasPustakaRequest extends FormRequest
 {
     public function authorize(): bool
     {
