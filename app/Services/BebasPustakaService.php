@@ -6,16 +6,22 @@ use App\Enums\BebasPustakaStatus;
 use App\Models\BebasPustaka;
 use App\Models\User;
 use App\Traits\LogsActivity;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class BebasPustakaService
 {
     use LogsActivity;
 
-    public function ajukan(User $user): BebasPustaka
+    // Disk 'local' (private): file hanya bisa dibuka lewat controller yang
+    // memeriksa akses (pemilik/pustakawan/atasan), bukan lewat URL publik.
+    protected const DISK = 'local';
+
+    public function ajukan(User $user, UploadedFile $fileSkripsi): BebasPustaka
     {
-        return DB::transaction(function () use ($user) {
+        return DB::transaction(function () use ($user, $fileSkripsi) {
             $pengajuanTerakhir = BebasPustaka::where('user_id', $user->id)
                 ->whereIn('status', [
                     BebasPustakaStatus::DIAJUKAN,
@@ -38,10 +44,19 @@ class BebasPustakaService
                 ]);
             }
 
-            $bebasPustaka = BebasPustaka::create([
-                'user_id' => $user->id,
-                'status' => BebasPustakaStatus::DIAJUKAN,
-            ]);
+            $path = $this->simpanFile($fileSkripsi, $user->id);
+
+            try {
+                $bebasPustaka = BebasPustaka::create([
+                    'user_id' => $user->id,
+                    'status' => BebasPustakaStatus::DIAJUKAN,
+                    'file_skripsi' => $path,
+                ]);
+            } catch (\Throwable $e) {
+                $this->hapusFileLama($path);
+
+                throw $e;
+            }
 
             // $this->logActivity($user, 'Mengajukan bebas pustaka');
 
@@ -111,7 +126,7 @@ class BebasPustakaService
 
     protected function simpanFile(UploadedFile $file, int $userId): string
     {
-        return $file->store("bebas-pustaka/{$userId}", 'public')
+        return $file->store("bebas-pustaka/{$userId}", self::DISK)
             ?: throw ValidationException::withMessages([
                 'file_skripsi' => ['Gagal menyimpan file skripsi.'],
             ]);
@@ -119,8 +134,8 @@ class BebasPustakaService
 
     protected function hapusFileLama(?string $path): void
     {
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        if ($path && Storage::disk(self::DISK)->exists($path)) {
+            Storage::disk(self::DISK)->delete($path);
         }
     }
 }
