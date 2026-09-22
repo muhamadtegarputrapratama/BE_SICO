@@ -15,7 +15,6 @@ class BebasPustaka extends Model
 
     protected $fillable = [
         'user_id',
-        'file_skripsi',
         'status',
         'file_skripsi',
         'catatan_revisi',
