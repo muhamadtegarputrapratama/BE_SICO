@@ -22,7 +22,7 @@ class StoreBebasPustakaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'file_skripsi.required' => 'File skripsi hasil revisi wajib diunggah.',
+            'file_skripsi.required' => 'File skripsi wajib diunggah.',
             'file_skripsi.file' => 'File skripsi tidak valid.',
             'file_skripsi.mimes' => 'File skripsi harus berformat PDF.',
             'file_skripsi.max' => 'Ukuran file skripsi maksimal 5MB.',

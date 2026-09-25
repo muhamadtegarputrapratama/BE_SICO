@@ -138,7 +138,6 @@ class PengajuanClearingController extends Controller
             return $this->error(
                 "Data pengajuan clearing dengan ID {$pengajuan} tidak ditemukan.",
                 null,
-                404
             );
         }
 
