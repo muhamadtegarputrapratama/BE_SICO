@@ -140,4 +140,20 @@ class BebasPustakaController extends Controller
 
         return Storage::disk(self::DISK)->download($bebasPustaka->file_skripsi, $this->namaFileSkripsi($bebasPustaka));
     }
+
+    public function downloadDistribusi(BebasPustaka $bebasPustaka)
+{
+    // Samakan pengecekan akses dengan method download()
+    // (mahasiswa hanya boleh file miliknya, pustakawan boleh semua)
+
+    if (!$bebasPustaka->file_distribusi
+        || !Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
+        abort(404, 'File distribusi tidak ditemukan.');
+    }
+
+    return Storage::disk('local')->download(
+        $bebasPustaka->file_distribusi,
+        'distribusi-' . ($bebasPustaka->user->nim ?? $bebasPustaka->id) . '.pdf'
+    );
+}
 }

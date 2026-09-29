@@ -97,6 +97,11 @@ Route::middleware('auth:sanctum')->group(function () {
             BebasPustakaController::class,
             'download'
         ]);
+
+        Route::get('/{bebasPustaka}/download-distribusi', [
+            BebasPustakaController::class,
+            'downloadDistribusi'
+        ]);
     });
 
     Route::prefix('pengajuan-clearing')->group(function () {
