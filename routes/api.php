@@ -88,6 +88,11 @@ Route::middleware('auth:sanctum')->group(function () {
             'previewSkripsi'
         ]);
 
+        Route::get('/{bebasPustaka}/preview-distribusi', [
+            BebasPustakaController::class,
+            'previewDistribusi'
+        ]);
+
         Route::get('/{bebasPustaka}/download', [
             BebasPustakaController::class,
             'download'

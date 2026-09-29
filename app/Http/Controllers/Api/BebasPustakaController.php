@@ -90,23 +90,42 @@ class BebasPustakaController extends Controller
     }
 
     public function previewSkripsi(Request $request, BebasPustaka $bebasPustaka)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
+        $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
 
-    if (! $bolehAkses) {
-        return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+        if (! $bolehAkses) {
+            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+        }
+
+        if (! $bebasPustaka->file_skripsi || ! Storage::disk('local')->exists($bebasPustaka->file_skripsi)) {
+            return $this->error('File skripsi tidak ditemukan.', null, 404);
+        }
+
+        return response()->file(
+            Storage::disk('local')->path($bebasPustaka->file_skripsi)
+        );
     }
 
-    if (! $bebasPustaka->file_skripsi || ! Storage::disk('local')->exists($bebasPustaka->file_skripsi)) {
-        return $this->error('File skripsi tidak ditemukan.', null, 404);
-    }
+    public function previewDistribusi(Request $request, BebasPustaka $bebasPustaka)
+    {
+        $user = $request->user();
 
-    return response()->file(
-        Storage::disk('local')->path($bebasPustaka->file_skripsi)
-    );
-}
+        $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
+
+        if (! $bolehAkses) {
+            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+        }
+
+        if (! $bebasPustaka->file_distribusi || ! Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
+            return $this->error('File distribusi tidak ditemukan.', null, 404);
+        }
+
+        return response()->file(
+            Storage::disk('local')->path($bebasPustaka->file_distribusi)
+        );
+    }
 
     // Dipaksa terunduh sebagai file (Content-Disposition: attachment)
     public function download(Request $request, BebasPustaka $bebasPustaka): StreamedResponse|JsonResponse
