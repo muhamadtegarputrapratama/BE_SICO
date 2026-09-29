@@ -40,7 +40,7 @@ class BebasPustakaController extends Controller
 
     public function store(StoreBebasPustakaRequest $request): JsonResponse
     {
-        $bebasPustaka = $this->service->ajukan($request->user(), $request->file('file_skripsi'));
+        $bebasPustaka = $this->service->ajukan($request->user(), $request->file('file_skripsi'), $request->file('file_distribusi'));
 
         return $this->success('Pengajuan bebas pustaka berhasil dibuat.', $bebasPustaka, 201);
     }
@@ -70,7 +70,8 @@ class BebasPustakaController extends Controller
         $bebasPustaka = $this->service->ajukanUlang(
             $bebasPustaka,
             $request->user(),
-            $request->file('file_skripsi')
+            $request->file('file_skripsi'),
+            $request->file('file_distribusi')
         );
 
         return $this->success('Pengajuan bebas pustaka berhasil diajukan ulang.', $bebasPustaka);

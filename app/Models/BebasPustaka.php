@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Storage;
 
 class BebasPustaka extends Model
 {
@@ -17,19 +16,27 @@ class BebasPustaka extends Model
         'user_id',
         'status',
         'file_skripsi',
+        'file_distribusi',
         'catatan_revisi',
         'direview_oleh',
         'direview_at',
     ];
 
-    // Path internal storage tidak ikut terkirim di JSON
+    /**
+     * Path internal storage tidak dikirim ke JSON response.
+     */
     protected $hidden = [
         'file_skripsi',
+        'file_distribusi',
     ];
 
-    // Sebagai gantinya, frontend cukup tahu apakah file sudah diunggah
+    /**
+     * Frontend hanya menerima informasi
+     * apakah file sudah tersedia atau belum.
+     */
     protected $appends = [
         'ada_file_skripsi',
+        'ada_file_distribusi',
     ];
 
     protected function casts(): array
@@ -42,7 +49,16 @@ class BebasPustaka extends Model
 
     protected function adaFileSkripsi(): Attribute
     {
-        return Attribute::get(fn () => ! empty($this->file_skripsi));
+        return Attribute::get(
+            fn () => !empty($this->file_skripsi)
+        );
+    }
+
+    protected function adaFileDistribusi(): Attribute
+    {
+        return Attribute::get(
+            fn () => !empty($this->file_distribusi)
+        );
     }
 
     public function user(): BelongsTo
@@ -52,11 +68,16 @@ class BebasPustaka extends Model
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'direview_oleh');
+        return $this->belongsTo(
+            User::class,
+            'direview_oleh'
+        );
     }
 
     public function pengajuanClearing(): HasOne
     {
-        return $this->hasOne(PengajuanClearing::class);
+        return $this->hasOne(
+            PengajuanClearing::class
+        );
     }
 }
