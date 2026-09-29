@@ -25,7 +25,7 @@ class StoreBebasPustakaRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:pdf',
-                'max:5120',
+                'max:1024',
             ],
         ];
     }
@@ -43,7 +43,7 @@ class StoreBebasPustakaRequest extends FormRequest
             'file_distribusi.required' => 'File distribusi skripsi wajib diunggah.',
             'file_distribusi.file' => 'File distribusi skripsi tidak valid.',
             'file_distribusi.mimes' => 'File distribusi skripsi harus berformat PDF.',
-            'file_distribusi.max' => 'Ukuran file distribusi skripsi maksimal 5MB.',
+            'file_distribusi.max' => 'Ukuran file distribusi skripsi maksimal 1MB.',
         ];
     }
 }

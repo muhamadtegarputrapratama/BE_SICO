@@ -25,7 +25,7 @@ class AjukanUlangBebasPustakaRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:pdf',
-                'max:5120',
+                'max:1024',
             ],
         ];
     }
@@ -57,7 +57,7 @@ class AjukanUlangBebasPustakaRequest extends FormRequest
                 'File distribusi skripsi harus berformat PDF.',
 
             'file_distribusi.max' =>
-                'Ukuran file distribusi maksimal 5MB.',
+                'Ukuran file distribusi maksimal 1MB.',
         ];
     }
 }
