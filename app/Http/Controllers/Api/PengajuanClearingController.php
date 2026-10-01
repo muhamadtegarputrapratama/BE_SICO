@@ -102,7 +102,6 @@ class PengajuanClearingController extends Controller
     }
 
     $data = $request->validate([
-        'departemen' => ['sometimes', 'string', 'max:255'],
         'file_ktm' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         'file_bukti_spp' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         // 'file_distribusi' DIHAPUS dari validasi ini

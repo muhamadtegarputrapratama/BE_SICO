@@ -26,7 +26,6 @@ class VerifikasiBebasPustakaController extends Controller
             'nomor_surat' => $pustaka->nomor_surat,
             'nama' => $pustaka->user->nama,
             'nim' => $pustaka->user->nim,
-            'departemen' => $pustaka->departemen ?? $pustaka->user->departemen,
             'diterbitkan_pada' => $pustaka->updated_at?->format('d-m-Y H:i'),
         ]);
     }

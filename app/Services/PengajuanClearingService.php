@@ -37,14 +37,13 @@ class PengajuanClearingService
     }
 
     $pengajuan = PengajuanClearing::create([
-        'user_id' => $user->id,
-        'bebas_pustaka_id' => $bebasPustaka->id,
-        'departemen' => $data['departemen'],
-        'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
-        'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
-        // file_distribusi DIHAPUS — ambil dari bebasPustaka
-        'status' => PengajuanClearingStatus::DIAJUKAN,
-    ]);
+    'user_id' => $user->id,
+    'bebas_pustaka_id' => $bebasPustaka->id,
+    'departemen' => $user->departemen,
+    'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
+    'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
+    'status' => PengajuanClearingStatus::DIAJUKAN,
+]);
 
     $this->logActivity($user, "Mengajukan pengajuan clearing #{$pengajuan->id}");
 

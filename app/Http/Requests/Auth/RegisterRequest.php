@@ -34,7 +34,7 @@ class RegisterRequest extends FormRequest
 
         'nim.required' => 'NIM wajib diisi.',
         'nim.size' => 'NIM harus terdiri dari tepat 11 karakter.',
-        'nim.regex' => 'NIM harus diawali E dan menggunakan kode departemen yang valid (E441, E442, E443, atau E444).',
+        'nim.regex' => 'NIM harus diawali E dan menggunakan kode  yang valid (E441, E442, E443, atau E444).',
         'nim.unique' => 'NIM sudah terdaftar.',
 
         'password.required' => 'Password wajib diisi.',

@@ -15,7 +15,7 @@ class StorePengajuanClearingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'departemen' => ['required', 'string', 'max:255'],
+           
             'file_ktm' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'file_bukti_spp' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ];
@@ -24,7 +24,7 @@ class StorePengajuanClearingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'departemen.required' => 'Departemen wajib diisi.',
+        
             'file_ktm.required' => 'File KTM wajib diunggah.',
             'file_bukti_spp.required' => 'File bukti pembayaran SPP wajib diunggah.',
         ];
