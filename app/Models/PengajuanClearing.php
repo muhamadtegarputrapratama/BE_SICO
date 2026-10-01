@@ -14,7 +14,7 @@ class PengajuanClearing extends Model
     protected $fillable = [
         'user_id',
         'bebas_pustaka_id',
-        '',
+        'departemen',
         'file_ktm',
         'file_bukti_spp',
         'status',
