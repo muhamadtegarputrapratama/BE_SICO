@@ -20,6 +20,9 @@ class BebasPustaka extends Model
         'catatan_revisi',
         'direview_oleh',
         'direview_at',
+        'nomor_surat',
+        'qr_token',
+        'file_surat',
     ];
 
     /**
@@ -28,6 +31,8 @@ class BebasPustaka extends Model
     protected $hidden = [
         'file_skripsi',
         'file_distribusi',
+        'file_surat',
+        'qr_token',
     ];
 
     /**
@@ -37,6 +42,7 @@ class BebasPustaka extends Model
     protected $appends = [
         'ada_file_skripsi',
         'ada_file_distribusi',
+        'ada_file_surat',
     ];
 
     protected function casts(): array
@@ -58,6 +64,13 @@ class BebasPustaka extends Model
     {
         return Attribute::get(
             fn () => !empty($this->file_distribusi)
+        );
+    }
+
+    protected function adaFileSurat(): Attribute
+    {
+        return Attribute::get(
+            fn () => !empty($this->file_surat)
         );
     }
 

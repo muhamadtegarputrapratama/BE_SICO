@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\BebasPustakaController;
 use App\Http\Controllers\Api\PengajuanClearingController;
 use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\Api\VerifikasiSuratController;
+use App\Http\Controllers\Api\VerifikasiBebasPustakaController;
+use App\Http\Controllers\Api\SuratBebasPustakaController;
 use App\Http\Controllers\Api\NotifikasiController;
 
 Route::prefix('auth')->group(function () {
@@ -48,6 +50,17 @@ Route::get('/surat/file/{token}', [
     VerifikasiSuratController::class,
     'file'
 ])->name('surat.file');
+
+// Verifikasi publik surat bebas pustaka (tanpa login)
+Route::get('/surat/bebas-pustaka/verify/{token}', [
+    VerifikasiBebasPustakaController::class,
+    'verify'
+])->name('surat.bebas-pustaka.verify');
+
+Route::get('/surat/bebas-pustaka/file/{token}', [
+    VerifikasiBebasPustakaController::class,
+    'file'
+])->name('surat.bebas-pustaka.file');
 
 
 
@@ -101,6 +114,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{bebasPustaka}/download-distribusi', [
             BebasPustakaController::class,
             'downloadDistribusi'
+        ]);
+
+        // Surat keterangan bebas pustaka (PDF); akses dicek di controller
+        Route::get('/{bebasPustaka}/preview-surat', [
+            SuratBebasPustakaController::class,
+            'previewSurat'
+        ]);
+
+        Route::get('/{bebasPustaka}/download-surat', [
+            SuratBebasPustakaController::class,
+            'downloadSurat'
         ]);
     });
 

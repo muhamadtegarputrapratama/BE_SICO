@@ -50,7 +50,7 @@ class SuratBebasPustakaService
             'tanggal_surat' => now(),
         ];
 
-        return Pdf::loadView('surat.bebas-pustaka', [
+        return Pdf::loadView('surat.bebaspustaka', [
             'surat' => $surat,
             'qrCode' => $qrCode,
         ]);
