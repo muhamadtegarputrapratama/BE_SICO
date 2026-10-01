@@ -94,35 +94,24 @@ class PengajuanClearingController extends Controller
     }
 
     public function ajukanUlang(
-        Request $request,
-        PengajuanClearing $pengajuan
-    ): JsonResponse {
-        if ($pengajuan->user_id !== $request->user()->id) {
-            return $this->error(
-                'Anda tidak memiliki akses.',
-                null,
-                403
-            );
-        }
-
-        $data = $request->validate([
-            'departemen' => ['sometimes', 'string', 'max:255'],
-            'file_ktm' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:1024'],
-            'file_bukti_spp' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:1024'],
-            'file_distribusi' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:1024'],
-        ]);
-
-        $pengajuan = $this->service->ajukanUlang(
-            $pengajuan,
-            $request->user(),
-            $data
-        );
-
-        return $this->success(
-            'Pengajuan clearing berhasil diajukan ulang.',
-            $pengajuan
-        );
+    Request $request,
+    PengajuanClearing $pengajuan
+): JsonResponse {
+    if ($pengajuan->user_id !== $request->user()->id) {
+        return $this->error('Anda tidak memiliki akses.', null, 403);
     }
+
+    $data = $request->validate([
+        'departemen' => ['sometimes', 'string', 'max:255'],
+        'file_ktm' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        'file_bukti_spp' => ['sometimes', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        // 'file_distribusi' DIHAPUS dari validasi ini
+    ]);
+
+    $pengajuan = $this->service->ajukanUlang($pengajuan, $request->user(), $data);
+
+    return $this->success('Pengajuan clearing berhasil diajukan ulang.', $pengajuan);
+}
 
     public function reviewAdmin(
         ReviewRequest $request,
@@ -303,45 +292,49 @@ class PengajuanClearingController extends Controller
         }
     }
 
-    public function previewDokumen(
-        Request $request,
-        $pengajuan,
-        string $jenis
-    ) {
-        $pengajuanModel = PengajuanClearing::find($pengajuan);
+    public function previewDokumen(Request $request, $pengajuan, string $jenis)
+{
+    $pengajuanModel = PengajuanClearing::with('bebasPustaka')->find($pengajuan);
 
-        if (!$pengajuanModel) {
-            return $this->error('Data pengajuan tidak ditemukan.', null, 404);
-        }
+    if (! $pengajuanModel) {
+        return $this->error('Data pengajuan tidak ditemukan.', null, 404);
+    }
 
-        $user = $request->user();
+    $user = $request->user();
 
-        $bolehAkses =
-            $pengajuanModel->user_id === $user->id ||
-            $user->hasAnyRole(['admin', 'atasan']);
+    $bolehAkses = $pengajuanModel->user_id === $user->id || $user->hasAnyRole(['admin', 'atasan']);
 
-        if (!$bolehAkses) {
-            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
-        }
+    if (! $bolehAkses) {
+        return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+    }
 
-        $fieldMap = [
-            'ktm' => 'file_ktm',
-            'spp' => 'file_bukti_spp',
-            'distribusi' => 'file_distribusi',
-        ];
+    if ($jenis === 'distribusi') {
+        $bebasPustaka = $pengajuanModel->bebasPustaka;
 
-        if (!isset($fieldMap[$jenis])) {
-            return $this->error('Jenis dokumen tidak valid.', null, 404);
-        }
-
-        $path = $pengajuanModel->{$fieldMap[$jenis]};
-
-        if (!$path || !Storage::disk('public')->exists($path)) {
-            return $this->error('File tidak ditemukan.', null, 404);
+        if (! $bebasPustaka || ! $bebasPustaka->file_distribusi || ! Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
+            return $this->error('File distribusi tidak ditemukan.', null, 404);
         }
 
         return response()->file(
-            Storage::disk('public')->path($path)
+            Storage::disk('local')->path($bebasPustaka->file_distribusi)
         );
     }
+
+    $fieldMap = [
+        'ktm' => 'file_ktm',
+        'spp' => 'file_bukti_spp',
+    ];
+
+    if (! isset($fieldMap[$jenis])) {
+        return $this->error('Jenis dokumen tidak valid.', null, 404);
+    }
+
+    $path = $pengajuanModel->{$fieldMap[$jenis]};
+
+    if (! $path || ! Storage::disk('public')->exists($path)) {
+        return $this->error('File tidak ditemukan.', null, 404);
+    }
+
+    return response()->file(Storage::disk('public')->path($path));
+}
 }
