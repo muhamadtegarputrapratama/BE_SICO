@@ -205,7 +205,7 @@
         <tr>
             <td class="label">Departemen</td>
             <td class="separator">:</td>
-            <td class="value">{{ $surat-> }}</td>
+            <td class="value">{{ $surat->departemen }}</td>
         </tr>
         <tr>
             <td class="label">NIM</td>
