@@ -22,65 +22,66 @@ class PengajuanClearingService
     {
     }
 
-    public function ajukan(User $user, array $data): PengajuanClearing
-    {
-        $bebasPustaka = BebasPustaka::where('user_id', $user->id)
-            ->where('status', BebasPustakaStatus::DISETUJUI)
-            ->whereDoesntHave('pengajuanClearing')
-            ->latest()
-            ->first();
+  public function ajukan(User $user, array $data): PengajuanClearing
+{
+    $bebasPustaka = BebasPustaka::where('user_id', $user->id)
+        ->where('status', BebasPustakaStatus::DISETUJUI)
+        ->whereDoesntHave('pengajuanClearing')
+        ->latest()
+        ->first();
 
-        if (! $bebasPustaka) {
-            throw ValidationException::withMessages([
-                'bebas_pustaka' => ['Anda belum memiliki bebas pustaka yang disetujui, atau sudah pernah dipakai untuk pengajuan clearing.'],
-            ]);
-        }
-
-        $pengajuan = PengajuanClearing::create([
-            'user_id' => $user->id,
-            'bebas_pustaka_id' => $bebasPustaka->id,
-            'departemen' => $data['departemen'],
-            'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
-            'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
-            'file_distribusi' => $this->simpanFile($data['file_distribusi'], $user->id, 'distribusi'),
-            'status' => PengajuanClearingStatus::DIAJUKAN,
+    if (! $bebasPustaka) {
+        throw ValidationException::withMessages([
+            'bebas_pustaka' => ['Anda belum memiliki bebas pustaka yang disetujui, atau sudah pernah dipakai untuk pengajuan clearing.'],
         ]);
-
-        $this->logActivity($user, "Mengajukan pengajuan clearing #{$pengajuan->id}");
-
-        return $pengajuan;
     }
-    
-    public function ajukanUlang(PengajuanClearing $pengajuan, User $user, array $data): PengajuanClearing
-    {
-        if ($pengajuan->status !== PengajuanClearingStatus::REVISI_ADMIN) {
-            throw ValidationException::withMessages([
-                'status' => ['Pengajuan ini tidak dalam status revisi.'],
-            ]);
-        }
 
-        $payload = [
-            'departemen' => $data['departemen'] ?? $pengajuan->departemen,
-            'status' => PengajuanClearingStatus::DIAJUKAN,
-            'catatan_revisi' => null,
-            'direview_admin_oleh' => null,
-            'direview_admin_at' => null,
-        ];
+    $pengajuan = PengajuanClearing::create([
+        'user_id' => $user->id,
+        'bebas_pustaka_id' => $bebasPustaka->id,
+        'departemen' => $data['departemen'],
+        'file_ktm' => $this->simpanFile($data['file_ktm'], $user->id, 'ktm'),
+        'file_bukti_spp' => $this->simpanFile($data['file_bukti_spp'], $user->id, 'spp'),
+        // file_distribusi DIHAPUS — ambil dari bebasPustaka
+        'status' => PengajuanClearingStatus::DIAJUKAN,
+    ]);
 
-        foreach (['file_ktm', 'file_bukti_spp', 'file_distribusi'] as $field) {
-            if (isset($data[$field])) {
-                $this->hapusFileLama($pengajuan->{$field});
-                $label = str_replace('file_', '', $field);
-                $payload[$field] = $this->simpanFile($data[$field], $user->id, $label);
-            }
-        }
+    $this->logActivity($user, "Mengajukan pengajuan clearing #{$pengajuan->id}");
 
-        $pengajuan->update($payload);
+    return $pengajuan;
+}
 
-        $this->logActivity($user, "Mengajukan ulang pengajuan clearing #{$pengajuan->id}");
-
-        return $pengajuan->fresh();
+public function ajukanUlang(PengajuanClearing $pengajuan, User $user, array $data): PengajuanClearing
+{
+    if ($pengajuan->status !== PengajuanClearingStatus::REVISI_ADMIN) {
+        throw ValidationException::withMessages([
+            'status' => ['Pengajuan ini tidak dalam status revisi.'],
+        ]);
     }
+
+    $payload = [
+        'departemen' => $data['departemen'] ?? $pengajuan->departemen,
+        'status' => PengajuanClearingStatus::DIAJUKAN,
+        'catatan_revisi' => null,
+        'direview_admin_oleh' => null,
+        'direview_admin_at' => null,
+    ];
+
+    // 'file_distribusi' DIHAPUS dari array ini
+    foreach (['file_ktm', 'file_bukti_spp'] as $field) {
+        if (isset($data[$field])) {
+            $this->hapusFileLama($pengajuan->{$field});
+            $label = str_replace('file_', '', $field);
+            $payload[$field] = $this->simpanFile($data[$field], $user->id, $label);
+        }
+    }
+
+    $pengajuan->update($payload);
+
+    $this->logActivity($user, "Mengajukan ulang pengajuan clearing #{$pengajuan->id}");
+
+    return $pengajuan->fresh();
+}
 
     public function reviewAdmin(PengajuanClearing $pengajuan, User $admin, string $keputusan, ?string $catatan): PengajuanClearing
     {

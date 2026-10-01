@@ -17,7 +17,6 @@ class PengajuanClearing extends Model
         'departemen',
         'file_ktm',
         'file_bukti_spp',
-        'file_distribusi',
         'status',
         'catatan_revisi',
         'direview_admin_oleh',

@@ -12,15 +12,10 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BebasPustakaController extends Controller
 {
     use ApiResponse;
-
-    protected const DISK = 'local';
 
     public function __construct(protected BebasPustakaService $service)
     {
@@ -40,7 +35,11 @@ class BebasPustakaController extends Controller
 
     public function store(StoreBebasPustakaRequest $request): JsonResponse
     {
-        $bebasPustaka = $this->service->ajukan($request->user(), $request->file('file_skripsi'), $request->file('file_distribusi'));
+        $bebasPustaka = $this->service->ajukan(
+            $request->user(),
+            $request->file('file_skripsi'),
+            $request->file('file_distribusi')
+        );
 
         return $this->success('Pengajuan bebas pustaka berhasil dibuat.', $bebasPustaka, 201);
     }
@@ -77,39 +76,19 @@ class BebasPustakaController extends Controller
         return $this->success('Pengajuan bebas pustaka berhasil diajukan ulang.', $bebasPustaka);
     }
 
-    private function bolehAksesFile(Request $request, BebasPustaka $bebasPustaka): bool
-    {
-        $user = $request->user();
-
-        return $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
-    }
-
-    private function namaFileSkripsi(BebasPustaka $bebasPustaka): string
-    {
-        return 'skripsi-' . Str::slug($bebasPustaka->user?->nim ?? (string) $bebasPustaka->id) . '.pdf';
-    }
-
     public function previewSkripsi(Request $request, BebasPustaka $bebasPustaka)
     {
-        $user = $request->user();
-
-        $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
-
-        if (! $bolehAkses) {
-            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
-        }
-
-        if (! $bebasPustaka->file_skripsi || ! Storage::disk('local')->exists($bebasPustaka->file_skripsi)) {
-            return $this->error('File skripsi tidak ditemukan.', null, 404);
-        }
-
-        return response()->file(
-            Storage::disk('local')->path($bebasPustaka->file_skripsi)
-        );
+        return $this->previewFile($request, $bebasPustaka, 'file_skripsi', 'File skripsi tidak ditemukan.');
     }
 
+    // [BARU] endpoint preview file distribusi dari bebas pustaka
     public function previewDistribusi(Request $request, BebasPustaka $bebasPustaka)
     {
+        return $this->previewFile($request, $bebasPustaka, 'file_distribusi', 'File distribusi tidak ditemukan.');
+    }
+
+    protected function previewFile(Request $request, BebasPustaka $bebasPustaka, string $field, string $pesanTidakAda)
+    {
         $user = $request->user();
 
         $bolehAkses = $bebasPustaka->user_id === $user->id || $user->hasAnyRole(['pustakawan', 'atasan']);
@@ -118,42 +97,12 @@ class BebasPustakaController extends Controller
             return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
         }
 
-        if (! $bebasPustaka->file_distribusi || ! Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
-            return $this->error('File distribusi tidak ditemukan.', null, 404);
+        if (! $bebasPustaka->{$field} || ! Storage::disk('local')->exists($bebasPustaka->{$field})) {
+            return $this->error($pesanTidakAda, null, 404);
         }
 
         return response()->file(
-            Storage::disk('local')->path($bebasPustaka->file_distribusi)
+            Storage::disk('local')->path($bebasPustaka->{$field})
         );
     }
-
-    // Dipaksa terunduh sebagai file (Content-Disposition: attachment)
-    public function download(Request $request, BebasPustaka $bebasPustaka): StreamedResponse|JsonResponse
-    {
-        if (! $this->bolehAksesFile($request, $bebasPustaka)) {
-            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
-        }
-
-        if (! $bebasPustaka->file_skripsi || ! Storage::disk(self::DISK)->exists($bebasPustaka->file_skripsi)) {
-            return $this->error('File skripsi tidak ditemukan.', null, 404);
-        }
-
-        return Storage::disk(self::DISK)->download($bebasPustaka->file_skripsi, $this->namaFileSkripsi($bebasPustaka));
-    }
-
-    public function downloadDistribusi(BebasPustaka $bebasPustaka)
-{
-    // Samakan pengecekan akses dengan method download()
-    // (mahasiswa hanya boleh file miliknya, pustakawan boleh semua)
-
-    if (!$bebasPustaka->file_distribusi
-        || !Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
-        abort(404, 'File distribusi tidak ditemukan.');
-    }
-
-    return Storage::disk('local')->download(
-        $bebasPustaka->file_distribusi,
-        'distribusi-' . ($bebasPustaka->user->nim ?? $bebasPustaka->id) . '.pdf'
-    );
-}
 }
