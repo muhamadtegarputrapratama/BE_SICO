@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BebasPustaka;
+use App\Models\PengajuanClearing;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -11,9 +12,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class SuratBebasPustakaService
+class SuratClearingService
 {
-    public function preview(BebasPustaka $bebasPustaka)
+    public function preview(PengajuanClearing $bebasPustaka)
     {
         $bebasPustaka->load('user');
 
@@ -31,7 +32,7 @@ class SuratBebasPustakaService
         $token = $bebasPustaka->qr_token;
 
         // QR arahkan ke endpoint file (biar konsisten sama generate())
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $token;
+        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -50,13 +51,13 @@ class SuratBebasPustakaService
             'tanggal_surat' => now(),
         ];
 
-        return Pdf::loadView('surat.bebas-pustaka', [
+        return Pdf::loadView('surat.clearing', [
             'surat' => $surat,
             'qrCode' => $qrCode,
         ]);
     }
 
-    public function generate(BebasPustaka $bebasPustaka)
+    public function generate(PengajuanClearing $bebasPustaka)
     {
         $bebasPustaka->load('user');
 
@@ -69,7 +70,7 @@ class SuratBebasPustakaService
         ]);
 
         // QR arahkan ke endpoint publik yang nampilin FILE PDF langsung
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $token;
+        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -87,12 +88,12 @@ class SuratBebasPustakaService
             'tanggal_surat' => now(),
         ];
 
-        $pdf = Pdf::loadView('surat.bebas-pustaka', [
+        $pdf = Pdf::loadView('surat.clearing', [
             'surat' => $surat,
             'qrCode' => $qrCode,
         ]);
 
-        $path = "bebas-pustaka/{$bebasPustaka->id}/surat-bebas-pustaka.pdf";
+        $path = "clearing/{$bebasPustaka->id}/surat-clearing.pdf";
         Storage::disk('public')->put($path, $pdf->output());
 
         $bebasPustaka->update([
@@ -102,9 +103,9 @@ class SuratBebasPustakaService
         return $bebasPustaka->fresh();
     }
 
-    public function generateQR(BebasPustaka $bebasPustaka)
+    public function generateQR(PengajuanClearing $bebasPustaka)
     {
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $bebasPustaka->qr_token;
+        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $bebasPustaka->qr_token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(300),
