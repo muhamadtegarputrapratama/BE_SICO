@@ -231,9 +231,6 @@
 
             <div class="signature-space">
                 <img src="data:image/svg+xml;base64,{{ $qrCode }}" class="qr">
-                {{-- Jika ingin pakai gambar tanda tangan, ganti QR di atas dengan:
-                <img src="{{ public_path('images/ttd-wawan.png') }}" class="signature-image">
-                --}}
             </div>
 
             <div class="signature-name">Wawan, S.E.</div>
