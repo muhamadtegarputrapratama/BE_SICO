@@ -16,7 +16,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'nama' => ['required', 'string', 'max:255', 'regex:/^\p{Lu}/u'],
-            'nim' => ['required', 'string', 'size:11', 'regex:/^E44[1-4][0-9]{5}$/', 'unique:users,nim'],
+            'nim' => ['required', 'string', 'size:11', 'regex:/^E44[1-4][0-9]{7}$/', 'unique:users,nim'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
         ];
