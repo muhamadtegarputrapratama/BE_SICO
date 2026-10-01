@@ -19,14 +19,25 @@ class AuthController extends Controller
     {}
 
     public function register(RegisterRequest $request): JsonResponse
-    {
-        $result = $this->authService->register($request->validated());
+{
+    $validated = $request->validated();
 
-        return $this->success('Registrasi berhasil.', [
-            'user' => new UserResource($result['user']),
-            'token' => $result['token'],
-        ], 201);
-    }
+    // Menentukan departemen berdasarkan kode NIM
+    $validated['departemen'] = match (substr($validated['nim'], 0, 4)) {
+        'E441' => 'Departemen Manajemen Hutan',
+        'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
+        'E443' => 'Departemen Silvikultur',
+        'E444' => 'Departemen Hasil Hutan',
+        default => null,
+    };
+
+    $result = $this->authService->register($validated);
+
+    return $this->success('Registrasi berhasil.', [
+        'user' => new UserResource($result['user']),
+        'token' => $result['token'],
+    ], 201);
+}
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -35,7 +46,7 @@ class AuthController extends Controller
             $validated['login'],
             $validated['password'],
         );
-    
+
         return $this->success('Login berhasil.', [
             'user' => new UserResource($result['user']),
             'token' => $result['token'],
@@ -47,7 +58,7 @@ class AuthController extends Controller
         $this->authService->logout($request->user());
 
         return $this->success('Logout berhasil.');
-    } 
+    }
 
     public function me(Request $request): JsonResponse
     {

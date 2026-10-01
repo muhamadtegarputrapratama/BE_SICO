@@ -12,26 +12,38 @@ class AuthService
 {
     use LogsActivity;
 
-    public function register(array $data): array
-    {
-        $user = User::create([
-            'nama' => $data['nama'],
-            'nim' => $data['nim'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+   public function register(array $data): array
+{
+    $departemen = match (substr($data['nim'], 0, 4)) {
+        'E441' => 'Departemen Manajemen Hutan',
+        'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
+        'E443' => 'Departemen Silvikultur',
+        'E444' => 'Departemen Hasil Hutan',
+        default => null,
+    };
 
-        $user->assignRole('mahasiswa');
+    $user = User::create([
+        'nama' => $data['nama'],
+        'nim' => $data['nim'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'departemen' => $departemen,
+    ]);
 
-        $this->logActivity($user, 'Registrasi akun baru sebagai mahasiswa');
+    $user->assignRole('mahasiswa');
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+    $this->logActivity(
+        $user,
+        'Registrasi akun baru sebagai mahasiswa'
+    );
 
-        return [
-            'user' => $user->load('roles'),
-            'token' => $token,
-        ];
-    }
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return [
+        'user' => $user->load('roles'),
+        'token' => $token,
+    ];
+}
 
     public function login(string $login, string $password): array
     {
