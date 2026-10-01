@@ -8,9 +8,15 @@ use App\Http\Controllers\Api\BebasPustakaController;
 use App\Http\Controllers\Api\PengajuanClearingController;
 use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\Api\VerifikasiSuratController;
-use App\Http\Controllers\Api\VerifikasiBebasPustakaController;
+use App\Http\Controllers\Api\VerifikasiSuratBebasPustakaController;
 use App\Http\Controllers\Api\SuratBebasPustakaController;
 use App\Http\Controllers\Api\NotifikasiController;
+
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
 
 Route::prefix('auth')->group(function () {
 
@@ -39,7 +45,11 @@ Route::prefix('auth')->group(function () {
 });
 
 
-
+/*
+|--------------------------------------------------------------------------
+| VERIFIKASI SURAT CLEARING - PUBLIC
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/surat/verify/{token}', [
     VerifikasiSuratController::class,
@@ -51,27 +61,50 @@ Route::get('/surat/file/{token}', [
     'file'
 ])->name('surat.file');
 
-// Verifikasi publik surat bebas pustaka (tanpa login)
+
+/*
+|--------------------------------------------------------------------------
+| VERIFIKASI SURAT BEBAS PUSTAKA - PUBLIC
+|--------------------------------------------------------------------------
+| Tidak membutuhkan login karena diakses dari QR Code.
+*/
+
 Route::get('/surat/bebas-pustaka/verify/{token}', [
-    VerifikasiBebasPustakaController::class,
+    VerifikasiSuratBebasPustakaController::class,
     'verify'
 ])->name('surat.bebas-pustaka.verify');
 
 Route::get('/surat/bebas-pustaka/file/{token}', [
-    VerifikasiBebasPustakaController::class,
+    VerifikasiSuratBebasPustakaController::class,
     'file'
 ])->name('surat.bebas-pustaka.file');
 
 
+/*
+|--------------------------------------------------------------------------
+| ROUTE YANG MEMBUTUHKAN LOGIN
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    /*
+    |--------------------------------------------------------------------------
+    | DASHBOARD
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/dashboard', [
         DashboardController::class,
         'index'
     ]);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | BEBAS PUSTAKA
+    |--------------------------------------------------------------------------
+    */
 
     Route::prefix('bebas-pustaka')->group(function () {
 
@@ -95,7 +128,13 @@ Route::middleware('auth:sanctum')->group(function () {
             'ajukanUlang'
         ])->middleware('role:mahasiswa');
 
-        // Tampil di browser (preview) dan unduh paksa (download); akses dicek di controller
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOKUMEN BEBAS PUSTAKA
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/{bebasPustaka}/preview-skripsi', [
             BebasPustakaController::class,
             'previewSkripsi'
@@ -116,7 +155,13 @@ Route::middleware('auth:sanctum')->group(function () {
             'downloadDistribusi'
         ]);
 
-        // Surat keterangan bebas pustaka (PDF); akses dicek di controller
+
+        /*
+        |--------------------------------------------------------------------------
+        | SURAT BEBAS PUSTAKA
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/{bebasPustaka}/preview-surat', [
             SuratBebasPustakaController::class,
             'previewSurat'
@@ -128,23 +173,30 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | PENGAJUAN CLEARING
+    |--------------------------------------------------------------------------
+    */
+
     Route::prefix('pengajuan-clearing')->group(function () {
 
-
+        /*
+        |--------------------------------------------------------------------------
+        | LIST & DETAIL
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/', [
             PengajuanClearingController::class,
             'index'
         ]);
 
-
-
         Route::post('/', [
             PengajuanClearingController::class,
             'store'
         ])->middleware('role:mahasiswa');
-
-
 
         Route::get('/{id}', [
             PengajuanClearingController::class,
@@ -152,6 +204,11 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | AJUKAN ULANG
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/{pengajuan}/ajukan-ulang', [
             PengajuanClearingController::class,
@@ -159,6 +216,11 @@ Route::middleware('auth:sanctum')->group(function () {
         ])->middleware('role:mahasiswa');
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | REVIEW ADMIN
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/{pengajuan}/review-admin', [
             PengajuanClearingController::class,
@@ -166,6 +228,11 @@ Route::middleware('auth:sanctum')->group(function () {
         ])->middleware('permission:verifikasi-admin');
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | PREVIEW DOKUMEN
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/{pengajuan}/dokumen/{jenis}', [
             PengajuanClearingController::class,
@@ -173,26 +240,60 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | PREVIEW SURAT CLEARING
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/{pengajuan}/preview-surat', [
             PengajuanClearingController::class,
             'previewSurat'
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REVIEW ATASAN
+        |--------------------------------------------------------------------------
+        */
 
         Route::post('/{pengajuan}/review-atasan', [
             PengajuanClearingController::class,
             'reviewAtasan'
         ])->middleware('permission:verifikasi-atasan');
 
-        Route::get('/pengajuan-clearing/{pengajuan}/qr', [
+
+        /*
+        |--------------------------------------------------------------------------
+        | QR SURAT CLEARING
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/{pengajuan}/qr', [
             PengajuanClearingController::class,
             'showQR'
         ])->name('pengajuan-clearing.qr');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOWNLOAD SURAT CLEARING
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/{pengajuan}/download-surat', [
             PengajuanClearingController::class,
             'downloadSurat'
         ]);
     });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NOTIFIKASI
+    |--------------------------------------------------------------------------
+    */
 
     Route::prefix('notifikasi')->group(function () {
 
@@ -217,6 +318,12 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | LAPORAN
+    |--------------------------------------------------------------------------
+    */
 
     Route::prefix('laporan')
         ->middleware('permission:laporan-view')

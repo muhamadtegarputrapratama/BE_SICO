@@ -8,7 +8,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
-class VerifikasiBebasPustakaController extends Controller
+class VerifikasiSuratBebasPustakaController extends Controller
 {
     use ApiResponse;
 
