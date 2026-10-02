@@ -276,7 +276,7 @@
             <tr>
                 <td class="label">Departemen</td>
                 <td class="separator">:</td>
-                <td>{{ $surat-> }}</td>
+                <td>{{ $surat->departemen ?? $surat->user->departemen }}</td>
             </tr>
         </table>
 

@@ -196,23 +196,25 @@
         Yang bertanda tangan dibawah ini, menerangkan bahwa :
     </div>
 
-    <table class="identity">
-        <tr>
-            <td class="label">Nama</td>
-            <td class="separator">:</td>
-            <td class="value">{{ $surat->nama }}</td>
-        </tr>
-        <tr>
-            <td class="label">Departemen</td>
-            <td class="separator">:</td>
-            <td class="value">{{ $surat-> }}</td>
-        </tr>
-        <tr>
-            <td class="label">NIM</td>
-            <td class="separator">:</td>
-            <td class="value">{{ $surat->nim }}</td>
-        </tr>
-    </table>
+   <table class="identity">
+    <tr>
+        <td class="label">Nama</td>
+        <td class="separator">:</td>
+        <td class="value">{{ $surat->nama ?? '-' }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Departemen</td>
+        <td class="separator">:</td>
+        <td class="value">{{ $surat->departemen ?? '-' }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">NIM</td>
+        <td class="separator">:</td>
+        <td class="value">{{ $surat->nim ?? '-' }}</td>
+    </tr>
+</table>
 
     <div class="paragraph">
         Tidak mempunyai pinjaman Bahan Pustaka pada Perpustakaan Fakultas Kehutanan
