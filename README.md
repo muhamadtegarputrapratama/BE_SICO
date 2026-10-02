@@ -114,12 +114,12 @@ Sesuaikan konfigurasi database di `.env`:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_PORT=3308
 DB_DATABASE=sico_db
 DB_USERNAME=root
 DB_PASSWORD=
 
-APP_URL=http://localhost:8000
+APP_URL=http://192.168.0.108:8000
 APP_FRONTEND_URL=http://localhost:5173
 ```
 

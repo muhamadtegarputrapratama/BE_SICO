@@ -239,6 +239,11 @@ Route::middleware('auth:sanctum')->group(function () {
             'previewDokumen'
         ]);
 
+        // tambah ini (2/10/26)
+        Route::get('/{pengajuan}/surat-bebas-pustaka', [
+            SuratBebasPustakaController::class,
+            'previewDariClearing'
+        ]);
 
         /*
         |--------------------------------------------------------------------------

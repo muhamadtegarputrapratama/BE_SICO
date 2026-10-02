@@ -8,6 +8,7 @@ use App\Http\Requests\ReviewRequest;
 use App\Models\PengajuanClearing;
 use App\Services\PengajuanClearingService;
 use App\Services\SuratClearingService;
+use App\Services\SuratBebasPustakaService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -292,48 +293,75 @@ class PengajuanClearingController extends Controller
     }
 
     public function previewDokumen(Request $request, $pengajuan, string $jenis)
-{
-    $pengajuanModel = PengajuanClearing::with('bebasPustaka')->find($pengajuan);
-
-    if (! $pengajuanModel) {
-        return $this->error('Data pengajuan tidak ditemukan.', null, 404);
-    }
-
-    $user = $request->user();
-
-    $bolehAkses = $pengajuanModel->user_id === $user->id || $user->hasAnyRole(['admin', 'atasan']);
-
-    if (! $bolehAkses) {
-        return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
-    }
-
-    if ($jenis === 'distribusi') {
-        $bebasPustaka = $pengajuanModel->bebasPustaka;
-
-        if (! $bebasPustaka || ! $bebasPustaka->file_distribusi || ! Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
-            return $this->error('File distribusi tidak ditemukan.', null, 404);
+    {
+        $pengajuanModel = PengajuanClearing::with('bebasPustaka')->find($pengajuan);
+ 
+        if (! $pengajuanModel) {
+            return $this->error('Data pengajuan tidak ditemukan.', null, 404);
         }
-
-        return response()->file(
-            Storage::disk('local')->path($bebasPustaka->file_distribusi)
-        );
+ 
+        $user = $request->user();
+ 
+        $bolehAkses = $pengajuanModel->user_id === $user->id || $user->hasAnyRole(['admin', 'atasan']);
+ 
+        if (! $bolehAkses) {
+            return $this->error('Anda tidak memiliki akses ke dokumen ini.', null, 403);
+        }
+ 
+        if ($jenis === 'distribusi') {
+            $bebasPustaka = $pengajuanModel->bebasPustaka;
+ 
+            if (! $bebasPustaka || ! $bebasPustaka->file_distribusi || ! Storage::disk('local')->exists($bebasPustaka->file_distribusi)) {
+                return $this->error('File distribusi tidak ditemukan.', null, 404);
+            }
+ 
+            return response()->file(
+                Storage::disk('local')->path($bebasPustaka->file_distribusi)
+            );
+        }
+ 
+        // Surat Keterangan Bebas Pustaka (otomatis dari pengajuan bebas pustaka yang disetujui)
+        if ($jenis === 'surat-bebas-pustaka') {
+            $bebasPustaka = $pengajuanModel->bebasPustaka;
+ 
+            if (! $bebasPustaka) {
+                return $this->error('Pengajuan ini belum terhubung ke bebas pustaka.', null, 404);
+            }
+ 
+            $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
+ 
+            if ($status !== 'disetujui') {
+                return $this->error('Surat bebas pustaka belum tersedia, pengajuan belum disetujui.', null, 422);
+            }
+ 
+            // Buat otomatis kalau file belum ada
+            if (! $bebasPustaka->file_surat
+                || ! Storage::disk('public')->exists($bebasPustaka->file_surat)) {
+                $bebasPustaka = app(SuratBebasPustakaService::class)->generate($bebasPustaka);
+            }
+ 
+            return response()->file(
+                Storage::disk('public')->path($bebasPustaka->file_surat),
+                ['Content-Type' => 'application/pdf']
+            );
+        }
+ 
+        $fieldMap = [
+            'ktm' => 'file_ktm',
+            'spp' => 'file_bukti_spp',
+        ];
+ 
+        if (! isset($fieldMap[$jenis])) {
+            return $this->error('Jenis dokumen tidak valid.', null, 404);
+        }
+ 
+        $path = $pengajuanModel->{$fieldMap[$jenis]};
+ 
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            return $this->error('File tidak ditemukan.', null, 404);
+        }
+ 
+        return response()->file(Storage::disk('public')->path($path));
     }
-
-    $fieldMap = [
-        'ktm' => 'file_ktm',
-        'spp' => 'file_bukti_spp',
-    ];
-
-    if (! isset($fieldMap[$jenis])) {
-        return $this->error('Jenis dokumen tidak valid.', null, 404);
-    }
-
-    $path = $pengajuanModel->{$fieldMap[$jenis]};
-
-    if (! $path || ! Storage::disk('public')->exists($path)) {
-        return $this->error('File tidak ditemukan.', null, 404);
-    }
-
-    return response()->file(Storage::disk('public')->path($path));
-}
+ 
 }

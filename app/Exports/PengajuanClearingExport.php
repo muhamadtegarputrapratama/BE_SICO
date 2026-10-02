@@ -31,7 +31,7 @@ class PengajuanClearingExport implements FromCollection, WithHeadings, WithMappi
         return [
             'No',           // Mengganti ID menjadi Nomor Urut
             'ID Pengajuan', // Kolom ID database (opsional, hapus jika tidak diperlukan)
-            'Nama', 'NIM', 'Departemen', 'Program Studi',
+            'Nama', 'NIM', 'Departemen',
             'Status', 'Nomor Surat',
             'Foto KTM', 'Bukti Pembayaran', 'File Distribusi', // Kolom I, J, K
             'Diverifikasi Admin', 'Disetujui Atasan', 'Catatan Revisi', 'Tanggal Diajukan',
