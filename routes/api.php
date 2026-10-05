@@ -177,6 +177,12 @@ Route::middleware('auth:sanctum')->group(function () {
             SuratBebasPustakaController::class,
             'downloadSurat'
         ]);
+
+        // Gambar QR (butuh login). Untuk <img src> langsung, pakai qr_url (route publik)
+        Route::get('/{bebasPustaka}/qr', [
+            SuratBebasPustakaController::class,
+            'qr'
+        ])->name('bebas-pustaka.qr');
     });
 
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BebasPustaka;
+use App\Models\PengajuanClearing;
 use App\Services\SuratBebasPustakaService;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,7 +29,7 @@ class SuratBebasPustakaController extends Controller
     {
         $path = $this->resolveFile($request, $bebasPustaka);
 
-        if ($path instanceof \Illuminate\Http\JsonResponse) {
+        if ($path instanceof JsonResponse) {
             return $path;
         }
 
@@ -41,13 +43,59 @@ class SuratBebasPustakaController extends Controller
     {
         $path = $this->resolveFile($request, $bebasPustaka);
 
-        if ($path instanceof \Illuminate\Http\JsonResponse) {
+        if ($path instanceof JsonResponse) {
             return $path;
         }
 
         $namaFile = 'surat-bebas-pustaka-' . $bebasPustaka->user->nim . '.pdf';
 
         return response()->download($path, $namaFile, ['Content-Type' => 'application/pdf']);
+    }
+
+    /**
+     * Gambar QR (SVG). Butuh token login, jadi di frontend harus diambil
+     * sebagai blob. Untuk <img src> langsung, pakai atribut qr_url (route publik).
+     */
+    public function qr(Request $request, BebasPustaka $bebasPustaka)
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('mahasiswa') && $bebasPustaka->user_id !== $user->id) {
+            return $this->error('Anda tidak berhak mengakses QR ini.', null, 403);
+        }
+
+        $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
+
+        if ($status !== self::STATUS_DISETUJUI) {
+            return $this->error('QR belum tersedia, pengajuan belum disetujui.', null, 422);
+        }
+
+        if (! $bebasPustaka->qr_token) {
+            $bebasPustaka = $this->service->generate($bebasPustaka);
+        }
+
+        // Baris ini yang sebelumnya hilang
+        return $this->service->generateQR($bebasPustaka);
+    }
+
+    /**
+     * Surat bebas pustaka yang terhubung ke sebuah pengajuan clearing.
+     */
+    public function previewDariClearing(Request $request, PengajuanClearing $pengajuan)
+    {
+        $bebasPustaka = $pengajuan->bebasPustaka;
+
+        if (! $bebasPustaka) {
+            return $this->error('Pengajuan ini belum terhubung ke surat bebas pustaka.', null, 404);
+        }
+
+        $path = $this->resolveFile($request, $bebasPustaka);
+
+        if ($path instanceof JsonResponse) {
+            return $path;
+        }
+
+        return response()->file($path, ['Content-Type' => 'application/pdf']);
     }
 
     /**
