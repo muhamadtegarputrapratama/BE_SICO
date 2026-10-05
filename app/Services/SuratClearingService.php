@@ -32,7 +32,7 @@ class SuratClearingService
         $token = $bebasPustaka->qr_token;
 
         // QR arahkan ke endpoint file (biar konsisten sama generate())
-        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $token;
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -70,7 +70,7 @@ class SuratClearingService
         ]);
 
         // QR arahkan ke endpoint publik yang nampilin FILE PDF langsung
-        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $token;
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
@@ -105,7 +105,7 @@ class SuratClearingService
 
     public function generateQR(PengajuanClearing $bebasPustaka)
     {
-        $verifyUrl = config('app.url') . '/api/surat/clearing/file/' . $bebasPustaka->qr_token;
+        $verifyUrl = config('app.url') . '/api/surat/file/' . $bebasPustaka->qr_token;
 
         $renderer = new ImageRenderer(
             new RendererStyle(300),
