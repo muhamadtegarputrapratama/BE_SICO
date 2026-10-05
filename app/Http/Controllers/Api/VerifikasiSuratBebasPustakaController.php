@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BebasPustaka;
+use App\Services\SuratBebasPustakaService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -22,11 +23,10 @@ class VerifikasiSuratBebasPustakaController extends Controller
 
         return $this->success('Surat valid.', [
             'id' => $pustaka->id,
-            'qr_token' => $pustaka->qr_token,
             'nomor_surat' => $pustaka->nomor_surat,
             'nama' => $pustaka->user->nama,
             'nim' => $pustaka->user->nim,
-            'departemen' => $pustaka->departemen ?? $pustaka->user->departemen,
+            'departemen' => $pustaka->user->departemen,
             'diterbitkan_pada' => $pustaka->updated_at?->format('d-m-Y H:i'),
         ]);
     }
@@ -44,7 +44,22 @@ class VerifikasiSuratBebasPustakaController extends Controller
         }
 
         return response()->file(
-            Storage::disk('public')->path($pustaka->file_surat)
+            Storage::disk('public')->path($pustaka->file_surat),
+            ['Content-Type' => 'application/pdf']
         );
+    }
+
+    /**
+     * Gambar QR (SVG) untuk ditampilkan di frontend lewat <img src="...">.
+     */
+    public function qr(string $token, SuratBebasPustakaService $service)
+    {
+        $pustaka = BebasPustaka::where('qr_token', $token)->first();
+
+        if (! $pustaka) {
+            abort(404, 'QR Code tidak ditemukan.');
+        }
+
+        return $service->generateQR($pustaka);
     }
 }

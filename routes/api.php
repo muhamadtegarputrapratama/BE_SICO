@@ -79,6 +79,12 @@ Route::get('/surat/bebas-pustaka/file/{token}', [
     'file'
 ])->name('surat.bebas-pustaka.file');
 
+// Gambar QR (SVG) untuk ditampilkan di frontend lewat <img src="...">
+Route::get('/surat/bebas-pustaka/qr/{token}', [
+    VerifikasiSuratBebasPustakaController::class,
+    'qr'
+])->name('surat.bebas-pustaka.qr');
+
 
 /*
 |--------------------------------------------------------------------------
