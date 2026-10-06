@@ -18,6 +18,7 @@ class PermissionSeeder extends Seeder
             'verifikasi-pustaka',
             'verifikasi-admin',
             'verifikasi-atasan',
+            
         ];
 
         foreach ($permissions as $permission) {
