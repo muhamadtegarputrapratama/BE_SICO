@@ -23,6 +23,7 @@ class BebasPustaka extends Model
         'nomor_surat',
         'qr_token',
         'file_surat',
+        'penandatangan',
     ];
 
     /**

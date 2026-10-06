@@ -10,6 +10,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class SuratBebasPustakaController extends Controller
 {
@@ -76,6 +77,48 @@ class SuratBebasPustakaController extends Controller
 
         // Baris ini yang sebelumnya hilang
         return $this->service->generateQR($bebasPustaka);
+    }
+
+    /**
+     * Daftar penandatangan yang bisa dipilih (untuk dropdown di frontend).
+     */
+    public function daftarPenandatangan()
+    {
+        $daftar = collect(config('pustakawan.daftar', []))
+            ->map(fn ($p, $kode) => [
+                'kode'    => $kode,
+                'nama'    => $p['nama'],
+                'nip'     => $p['nip'],
+                'jabatan' => $p['jabatan'],
+            ])
+            ->values();
+
+        return $this->success('Daftar penandatangan berhasil diambil.', $daftar);
+    }
+
+    /**
+     * Pustakawan memilih siapa yang menandatangani surat.
+     * Kalau surat sudah terbit, dibuat ulang dengan penandatangan baru.
+     */
+    public function setPenandatangan(Request $request, BebasPustaka $bebasPustaka)
+    {
+        $data = $request->validate([
+            'penandatangan' => [
+                'required',
+                'string',
+                Rule::in(array_keys(config('pustakawan.daftar', []))),
+            ],
+        ]);
+
+        $bebasPustaka->update(['penandatangan' => $data['penandatangan']]);
+
+        $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
+
+        if ($status === self::STATUS_DISETUJUI && $bebasPustaka->file_surat) {
+            $bebasPustaka = $this->service->generate($bebasPustaka);
+        }
+
+        return $this->success('Penandatangan surat berhasil disimpan.', $bebasPustaka);
     }
 
     /**

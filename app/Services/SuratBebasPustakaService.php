@@ -13,6 +13,10 @@ use Illuminate\Support\Str;
 
 class SuratBebasPustakaService
 {
+    // Nama view = nama file di resources/views/surat/ (tanpa .blade.php)
+    // File bebaspustaka.blade.php -> 'surat.bebaspustaka'
+    private const VIEW = 'surat.bebaspustaka';
+
     public function preview(BebasPustaka $bebasPustaka)
     {
         $bebasPustaka->load('user');
@@ -50,9 +54,10 @@ class SuratBebasPustakaService
             'tanggal_surat' => now(),
         ];
 
-        return Pdf::loadView('surat.bebas-pustaka', [
+        return Pdf::loadView(self::VIEW, [
             'surat' => $surat,
             'qrCode' => $qrCode,
+            'penandatangan' => $this->penandatangan($bebasPustaka),
         ]);
     }
 
@@ -60,7 +65,8 @@ class SuratBebasPustakaService
     {
         $bebasPustaka->load('user');
 
-        $token = Str::random(64);
+        // Token dipertahankan kalau sudah ada, supaya QR di surat lama tetap berlaku
+        $token = $bebasPustaka->qr_token ?: Str::random(64);
         $nomorSurat = sprintf('%03d', $bebasPustaka->id);
 
         $bebasPustaka->update([
@@ -87,9 +93,10 @@ class SuratBebasPustakaService
             'tanggal_surat' => now(),
         ];
 
-        $pdf = Pdf::loadView('surat.bebas-pustaka', [
+        $pdf = Pdf::loadView(self::VIEW, [
             'surat' => $surat,
             'qrCode' => $qrCode,
+            'penandatangan' => $this->penandatangan($bebasPustaka),
         ]);
 
         $path = "bebas-pustaka/{$bebasPustaka->id}/surat-bebas-pustaka.pdf";
@@ -114,5 +121,25 @@ class SuratBebasPustakaService
         $qrSvg = $writer->writeString($verifyUrl);
 
         return response($qrSvg, 200)->header('Content-Type', 'image/svg+xml');
+    }
+
+    /**
+     * Penandatangan dipilih pustakawan (kolom bebas_pustaka.penandatangan).
+     * Kalau belum dipilih, pakai default di config/pustakawan.php.
+     */
+    private function penandatangan(BebasPustaka $bebasPustaka): array
+    {
+        $daftar = config('pustakawan.daftar', []);
+        $kode = $bebasPustaka->penandatangan;
+
+        if ($kode && isset($daftar[$kode])) {
+            return $daftar[$kode];
+        }
+
+        return $daftar[config('pustakawan.default')] ?? [
+            'jabatan' => 'Pustakawan',
+            'nama'    => 'Wawan, S.E.',
+            'nip'     => '197305182007011001',
+        ];
     }
 }

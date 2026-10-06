@@ -124,6 +124,18 @@ Route::middleware('auth:sanctum')->group(function () {
             'store'
         ])->middleware('role:mahasiswa');
 
+        // Daftar penandatangan surat (untuk dropdown)
+        Route::get('/penandatangan', [
+            SuratBebasPustakaController::class,
+            'daftarPenandatangan'
+        ])->middleware('permission:verifikasi-pustaka');
+
+        // Pustakawan memilih penandatangan surat
+        Route::post('/{bebasPustaka}/penandatangan', [
+            SuratBebasPustakaController::class,
+            'setPenandatangan'
+        ])->middleware('permission:verifikasi-pustaka');
+
         Route::post('/{bebasPustaka}/review', [
             BebasPustakaController::class,
             'review'
