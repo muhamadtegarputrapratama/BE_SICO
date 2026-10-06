@@ -21,7 +21,7 @@ class LaporanController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        if (! $request->user()->hasRole('admin')) {
+        if (! $request->user()->hasRole('laporan-view')) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
@@ -33,7 +33,7 @@ class LaporanController extends Controller
 
     public function export(Request $request)
     {
-        if (! $request->user()->hasRole('admin')) {
+        if (! $request->user()->hasRole('laporan-view')) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 

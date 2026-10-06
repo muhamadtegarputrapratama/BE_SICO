@@ -66,11 +66,14 @@ public function ajukanUlang(PengajuanClearing $pengajuan, User $user, array $dat
         'direview_admin_at' => null,
     ];
 
-    // 'file_distribusi' DIHAPUS dari array ini
+    $labels = [
+        'file_ktm' => 'ktm',
+        'file_bukti_spp' => 'spp',
+    ];
     foreach (['file_ktm', 'file_bukti_spp'] as $field) {
         if (isset($data[$field])) {
             $this->hapusFileLama($pengajuan->{$field});
-            $label = str_replace('file_ktm', 'file_bukti_spp', $field);
+            $label = $labels[$field] ?? $field;
             $payload[$field] = $this->simpanFile($data[$field], $user->id, $label);
         }
     }

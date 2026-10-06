@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -63,6 +64,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Endpoint tidak ditemukan.',
                     'errors' => null,
                 ], 404);
+            }
+        });
+
+                $exceptions->render(function (UnauthorizedException $e, $request) {
+                   if ($request->is('api/*')) {
+                       return response()->json([
+                       'success' => false,
+                       'message' => 'Anda tidak memiliki hak akses untuk tindakan ini.',
+                       'errors' => null,
+                ], 403);
             }
         });
     })->create();

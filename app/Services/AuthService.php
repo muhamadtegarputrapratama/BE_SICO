@@ -13,14 +13,15 @@ class AuthService
     use LogsActivity;
 
    public function register(array $data): array
-{
-    $departemen = match (substr($data['nim'], 0, 4)) {
-        'E441' => 'Departemen Manajemen Hutan',
-        'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
-        'E443' => 'Departemen Silvikultur',
-        'E444' => 'Departemen Hasil Hutan',
-        default => null,
-    };
+    {
+        $kode = strtoupper(substr($data['nim'], 0, 4));
+        $departemen = match ($kode) {
+            'E441' => 'Departemen Manajemen Hutan',
+            'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
+            'E443' => 'Departemen Silvikultur',
+            'E444' => 'Departemen Hasil Hutan',
+            default => null,
+        };
 
     $user = User::create([
         'nama' => $data['nama'],

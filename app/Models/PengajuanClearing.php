@@ -57,7 +57,7 @@ class PengajuanClearing extends Model
 
     public function getUrlDistribusiAttribute(): ?string
     {
-        return $this->file_distribusi ? asset('storage/' . $this->file_distribusi) : null;
+        return $this->bebasPustaka?->file_distribusi ? url("/api/bebas-pustaka/{$this->bebas_pustaka_id}/preview-distribusi") : null;
     }
 
     public function user(): BelongsTo

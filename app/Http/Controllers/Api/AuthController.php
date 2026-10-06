@@ -18,26 +18,15 @@ class AuthController extends Controller
     public function __construct(protected AuthService $authService)
     {}
 
-    public function register(RegisterRequest $request): JsonResponse
-{
-    $validated = $request->validated();
+        public function register(RegisterRequest $request): JsonResponse
+    {
+        $result = $this->authService->register($request->validated());
 
-    // Menentukan departemen berdasarkan kode NIM
-    $validated['departemen'] = match (substr($validated['nim'], 0, 4)) {
-        'E441' => 'Departemen Manajemen Hutan',
-        'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
-        'E443' => 'Departemen Silvikultur',
-        'E444' => 'Departemen Hasil Hutan',
-        default => null,
-    };
-
-    $result = $this->authService->register($validated);
-
-    return $this->success('Registrasi berhasil.', [
-        'user' => new UserResource($result['user']),
-        'token' => $result['token'],
-    ], 201);
-}
+        return $this->success('Registrasi berhasil.', [
+            'user' => new UserResource($result['user']),
+            'token' => $result['token'],
+        ], 201);
+    }
 
     public function login(LoginRequest $request): JsonResponse
     {

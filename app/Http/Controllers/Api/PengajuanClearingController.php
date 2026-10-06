@@ -163,20 +163,7 @@ class PengajuanClearingController extends Controller
             'keputusan' => ['required', 'in:setuju,tolak'],
         ]);
 
-        try {
-            $pengajuanModel = $this->service->reviewAtasan(
-                $pengajuanModel,
-                $request->user(),
-                $data['keputusan']
-            );
-
-            // Kalau atasan setuju -> generate surat FINAL
-            if ($data['keputusan'] === 'setuju') {
-                $pengajuanModel = $this->suratService->generate($pengajuanModel);
-            }
-        } catch (ValidationException $e) {
-            return $this->error($e->getMessage(), $e->errors(), 422);
-        }
+     
 
         return $this->success(
             'Review atasan berhasil disimpan.',

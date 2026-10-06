@@ -66,45 +66,35 @@ class PengajuanClearingExport implements FromCollection, WithHeadings, WithMappi
     {
         $drawings = [];
         $rowNumber = 2; // Data mulai di baris 2 (baris 1 = Headings)
-
         foreach ($this->pengajuanCollection as $pengajuan) {
-            // Karena ada penambahan kolom 'No', posisi gambar bergeser ke kolom I, J, K
+            // KTM & SPP ada di disk 'public', File Distribusi ada di relasi bebasPustaka (disk 'local')
             $filesToEmbed = [
-                'I' => $pengajuan->file_ktm ?? null,
-                'J' => $pengajuan->file_bukti_spp ?? $pengajuan->bukti_spp ?? null,
-                'K' => $pengajuan->file_distribusi ?? null,
+                'I' => ['path' => $pengajuan->file_ktm, 'disk' => 'public'],
+                'J' => ['path' => $pengajuan->file_bukti_spp, 'disk' => 'public'],
+                'K' => ['path' => $pengajuan->bebasPustaka?->file_distribusi, 'disk' => 'local'],
             ];
-
-            foreach ($filesToEmbed as $column => $relativePath) {
-                if (! $relativePath) {
+            foreach ($filesToEmbed as $column => $item) {
+                $relativePath = $item['path'];
+                $disk = $item['disk'];
+                if (! $relativePath || ! Storage::disk($disk)->exists($relativePath)) {
                     continue;
                 }
-
-                // Cek lokasi fisik file di storage/app/private/ atau storage/app/
-                $fullPath = storage_path('app/private/' . $relativePath);
-
-                if (! file_exists($fullPath)) {
-                    $fullPath = storage_path('app/' . $relativePath);
-                }
-
-                // Cek apakah file fisik gambar benar-benar ada
+                $fullPath = Storage::disk($disk)->path($relativePath);
+                // Pastikan file berupa gambar (bukan PDF) sebelum dimasukkan ke Excel
                 if (file_exists($fullPath) && @getimagesize($fullPath)) {
                     $drawing = new Drawing();
                     $drawing->setName("Doc-{$pengajuan->id}-{$column}");
                     $drawing->setDescription("Berkas Pengajuan");
                     $drawing->setPath($fullPath);
-                    $drawing->setHeight(45); // Tinggi gambar dalam piksel
+                    $drawing->setHeight(45);
                     $drawing->setCoordinates($column . $rowNumber);
                     $drawing->setOffsetX(8);
                     $drawing->setOffsetY(4);
-
                     $drawings[] = $drawing;
                 }
             }
-
             $rowNumber++;
         }
-
         return $drawings;
     }
 

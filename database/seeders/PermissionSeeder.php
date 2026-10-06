@@ -18,7 +18,7 @@ class PermissionSeeder extends Seeder
             'verifikasi-pustaka',
             'verifikasi-admin',
             'verifikasi-atasan',
-            
+            'laporan-view',
         ];
 
         foreach ($permissions as $permission) {
@@ -33,13 +33,14 @@ class PermissionSeeder extends Seeder
         $pustakawan?->givePermissionTo('verifikasi-pustaka');
 
         $admin = Role::where('name', 'admin')->where('guard_name', 'sanctum')->first();
-        $admin?->givePermissionTo('verifikasi-admin');
+        $admin?->givePermissionTo('verifikasi-admin', 'laporan-view');
 
         $atasan = Role::where('name', 'atasan')->where('guard_name', 'sanctum')->first();
         $atasan?->givePermissionTo([
             'verifikasi-pustaka',
             'verifikasi-admin',
             'verifikasi-atasan',
+            'laporan-view',
         ]);
     }
     }

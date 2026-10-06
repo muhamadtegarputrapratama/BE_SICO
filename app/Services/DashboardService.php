@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Enums\BebasPustakaStatus;
+use App\Enums\PengajuanClearingStatus;
+use App\Models\BebasPustaka;
 use App\Models\PengajuanClearing;
 
 class DashboardService
@@ -20,16 +23,27 @@ class DashboardService
         };
     }
 
-    protected function mahasiswaDashboard(User $user): array
+     protected function mahasiswaDashboard(User $user): array
     {
+        $total = PengajuanClearing::where('user_id', $user->id)->count();
+        $pending = PengajuanClearing::where('user_id', $user->id)
+            ->whereIn('status', [
+                PengajuanClearingStatus::DIAJUKAN,
+                PengajuanClearingStatus::DIVERIFIKASI_ADMIN,
+                PengajuanClearingStatus::REVISI_ADMIN,
+            ])->count();
+        $disetujui = PengajuanClearing::where('user_id', $user->id)
+            ->where('status', PengajuanClearingStatus::DISETUJUI)->count();
+        $ditolak = PengajuanClearing::where('user_id', $user->id)
+            ->where('status', PengajuanClearingStatus::DITOLAK)->count();
         return [
             'role' => 'mahasiswa',
             'greeting' => 'Selamat datang, ' . $user->nama,
             'statistik' => [
-                'total_pengajuan' => 0,
-                'pengajuan_pending' => 0,
-                'pengajuan_disetujui' => 0,
-                'pengajuan_ditolak' => 0,
+                'total_pengajuan' => $total,
+                'pengajuan_pending' => $pending,
+                'pengajuan_disetujui' => $disetujui,
+                'pengajuan_ditolak' => $ditolak,
             ],
             'menu' => [
                 'buat_pengajuan',
@@ -39,14 +53,20 @@ class DashboardService
         ];
     }
 
-    protected function adminDashboard(User $user): array
+     protected function adminDashboard(User $user): array
     {
+        $perluVerifikasi = PengajuanClearing::where('status', PengajuanClearingStatus::DIAJUKAN)->count();
+        $totalDiproses = PengajuanClearing::whereIn('status', [
+            PengajuanClearingStatus::DIVERIFIKASI_ADMIN,
+            PengajuanClearingStatus::DISETUJUI,
+            PengajuanClearingStatus::DITOLAK,
+        ])->count();
         return [
             'role' => 'admin',
             'greeting' => 'Selamat datang, ' . $user->nama,
             'statistik' => [
-                'pengajuan_perlu_verifikasi' => 0,
-                'total_pengajuan_diproses' => 0,
+                'pengajuan_perlu_verifikasi' => $perluVerifikasi,
+                'total_pengajuan_diproses' => $totalDiproses,
             ],
             'menu' => [
                 'verifikasi_pengajuan',
@@ -77,14 +97,16 @@ class DashboardService
     ];
 }
 
-    protected function pustakawanDashboard(User $user): array
+     protected function pustakawanDashboard(User $user): array
     {
+        $perluDicek = BebasPustaka::where('status', BebasPustakaStatus::DIAJUKAN)->count();
+        $totalBebasPustaka = BebasPustaka::count();
         return [
             'role' => 'pustakawan',
             'greeting' => 'Selamat datang, ' . $user->nama,
             'statistik' => [
-                'pengajuan_perlu_dicek' => 0,
-                'total_bebas_pustaka' => 0,
+                'pengajuan_perlu_dicek' => $perluDicek,
+                'total_bebas_pustaka' => $totalBebasPustaka,
             ],
             'menu' => [
                 'cek_pinjaman_buku',
