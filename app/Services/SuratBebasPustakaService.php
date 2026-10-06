@@ -15,8 +15,7 @@ class SuratBebasPustakaService
 {
     // Nama view = nama file di resources/views/surat/ (tanpa .blade.php)
     // File bebaspustaka.blade.php -> 'surat.bebaspustaka'
-    private const VIEW = 'surat.bebaspustaka';
-
+   private const VIEW = 'surat.bebas-pustaka';
     public function preview(BebasPustaka $bebasPustaka)
     {
         $bebasPustaka->load('user');

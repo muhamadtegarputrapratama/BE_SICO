@@ -101,25 +101,33 @@ class SuratBebasPustakaController extends Controller
      * Kalau surat sudah terbit, dibuat ulang dengan penandatangan baru.
      */
     public function setPenandatangan(Request $request, BebasPustaka $bebasPustaka)
-    {
-        $data = $request->validate([
-            'penandatangan' => [
-                'required',
-                'string',
-                Rule::in(array_keys(config('pustakawan.daftar', []))),
-            ],
-        ]);
+{
+    $data = $request->validate([
+        'penandatangan' => [
+            'required',
+            'string',
+            Rule::in(array_keys(config('pustakawan.daftar', []))),
+        ],
+    ]);
 
-        $bebasPustaka->update(['penandatangan' => $data['penandatangan']]);
+    $bebasPustaka->update([
+        'penandatangan' => $data['penandatangan'],
+    ]);
 
-        $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
+    // Refresh data setelah update
+    $bebasPustaka->refresh();
 
-        if ($status === self::STATUS_DISETUJUI && $bebasPustaka->file_surat) {
-            $bebasPustaka = $this->service->generate($bebasPustaka);
-        }
+    $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
 
-        return $this->success('Penandatangan surat berhasil disimpan.', $bebasPustaka);
-    }
+   if ($status === self::STATUS_DISETUJUI) {
+    $bebasPustaka = $this->service->generate($bebasPustaka);
+}
+
+    return $this->success(
+        'Penandatangan surat berhasil disimpan.',
+        $bebasPustaka
+    );
+}
 
     /**
      * Surat bebas pustaka yang terhubung ke sebuah pengajuan clearing.
