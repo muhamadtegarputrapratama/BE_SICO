@@ -25,16 +25,37 @@ class SuratBebasPustakaController extends Controller
 
     /**
      * Tampil di browser (preview PDF).
+     * - Sudah disetujui : pakai file PDF yang tersimpan.
+     * - Belum disetujui : hanya pustakawan, PDF dibuat on-the-fly.
      */
     public function previewSurat(Request $request, BebasPustaka $bebasPustaka)
     {
-        $path = $this->resolveFile($request, $bebasPustaka);
+        $user   = $request->user();
+        $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
 
-        if ($path instanceof JsonResponse) {
-            return $path;
+        if ($status === self::STATUS_DISETUJUI) {
+            $path = $this->resolveFile($request, $bebasPustaka);
+
+            if ($path instanceof JsonResponse) {
+                return $path;
+            }
+
+            return response()->file($path, ['Content-Type' => 'application/pdf']);
         }
 
-        return response()->file($path, ['Content-Type' => 'application/pdf']);
+        // Belum disetujui -> hanya pustakawan yang boleh melihat preview
+        if (! $user->can('verifikasi-pustaka')) {
+            return $this->error('Surat belum tersedia, pengajuan belum disetujui.', null, 422);
+        }
+
+        if (! $bebasPustaka->penandatangan) {
+            return $this->error('Penandatangan surat belum dipilih. Pilih penandatangan terlebih dahulu.', null, 422);
+        }
+
+        // PDF dibuat on-the-fly, tidak disimpan ke storage
+        return $this->service
+            ->preview($bebasPustaka)
+            ->stream('preview-surat-bebas-pustaka.pdf');
     }
 
     /**
@@ -75,7 +96,6 @@ class SuratBebasPustakaController extends Controller
             $bebasPustaka = $this->service->generate($bebasPustaka);
         }
 
-        // Baris ini yang sebelumnya hilang
         return $this->service->generateQR($bebasPustaka);
     }
 
@@ -101,33 +121,32 @@ class SuratBebasPustakaController extends Controller
      * Kalau surat sudah terbit, dibuat ulang dengan penandatangan baru.
      */
     public function setPenandatangan(Request $request, BebasPustaka $bebasPustaka)
-{
-    $data = $request->validate([
-        'penandatangan' => [
-            'required',
-            'string',
-            Rule::in(array_keys(config('pustakawan.daftar', []))),
-        ],
-    ]);
+    {
+        $data = $request->validate([
+            'penandatangan' => [
+                'required',
+                'string',
+                Rule::in(array_keys(config('pustakawan.daftar', []))),
+            ],
+        ]);
 
-    $bebasPustaka->update([
-        'penandatangan' => $data['penandatangan'],
-    ]);
+        $bebasPustaka->update([
+            'penandatangan' => $data['penandatangan'],
+        ]);
 
-    // Refresh data setelah update
-    $bebasPustaka->refresh();
+        $bebasPustaka->refresh();
 
-    $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
+        $status = $bebasPustaka->status?->value ?? $bebasPustaka->status;
 
-   if ($status === self::STATUS_DISETUJUI) {
-    $bebasPustaka = $this->service->generate($bebasPustaka);
-}
+        if ($status === self::STATUS_DISETUJUI) {
+            $bebasPustaka = $this->service->generate($bebasPustaka);
+        }
 
-    return $this->success(
-        'Penandatangan surat berhasil disimpan.',
-        $bebasPustaka
-    );
-}
+        return $this->success(
+            'Penandatangan surat berhasil disimpan.',
+            $bebasPustaka
+        );
+    }
 
     /**
      * Surat bebas pustaka yang terhubung ke sebuah pengajuan clearing.

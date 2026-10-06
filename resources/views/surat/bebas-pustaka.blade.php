@@ -146,11 +146,6 @@
             height: 80px;
         }
 
-        .signature-image {
-            max-width: 150px;
-            max-height: 85px;
-        }
-
         .signature-name {
             font-weight: normal;
         }
@@ -227,14 +222,14 @@
     <div class="signature">
         <div class="signature-wrapper">
             <div>Bogor, {{ \Carbon\Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y') }}</div>
-            <div>Pustakawan,</div>
+            <div>{{ $penandatangan['jabatan'] ?? 'Pustakawan' }},</div>
 
             <div class="signature-space">
                 <img src="data:image/svg+xml;base64,{{ $qrCode }}" class="qr">
             </div>
 
-            <div class="signature-name">Wawan, S.E.</div>
-            <div>NIP. 197305182007011001</div>
+            <div class="signature-name">{{ $penandatangan['nama'] }}</div>
+            <div>NIP. {{ $penandatangan['nip'] }}</div>
         </div>
     </div>
 

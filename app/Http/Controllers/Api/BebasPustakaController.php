@@ -50,6 +50,15 @@ class BebasPustakaController extends Controller
             return $this->error('Anda tidak memiliki akses.', null, 403);
         }
 
+        // Surat tidak boleh terbit tanpa penandatangan yang dipilih
+        if ($request->validated('keputusan') === 'setuju' && ! $bebasPustaka->penandatangan) {
+            return $this->error(
+                'Penandatangan surat belum dipilih. Pilih penandatangan terlebih dahulu.',
+                null,
+                422
+            );
+        }
+
         $bebasPustaka = $this->service->review(
             $bebasPustaka,
             $request->user(),
@@ -81,7 +90,6 @@ class BebasPustakaController extends Controller
         return $this->previewFile($request, $bebasPustaka, 'file_skripsi', 'File skripsi tidak ditemukan.');
     }
 
-    // [BARU] endpoint preview file distribusi dari bebas pustaka
     public function previewDistribusi(Request $request, BebasPustaka $bebasPustaka)
     {
         return $this->previewFile($request, $bebasPustaka, 'file_distribusi', 'File distribusi tidak ditemukan.');

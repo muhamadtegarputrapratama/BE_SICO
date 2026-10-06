@@ -17,6 +17,10 @@ class BebasPustakaService
 
     protected const DISK = 'local';
 
+    public function __construct(protected SuratBebasPustakaService $suratService)
+    {
+    }
+
     public function ajukan(User $user, UploadedFile $fileSkripsi, UploadedFile $fileDistribusi): BebasPustaka
     {
         return DB::transaction(function () use ($user, $fileSkripsi, $fileDistribusi) {
@@ -79,12 +83,23 @@ class BebasPustakaService
             'tolak' => BebasPustakaStatus::DITOLAK,
         };
 
-        $bebasPustaka->update([
-            'status' => $status,
-            'catatan_revisi' => $keputusan === 'revisi' ? $catatan : null,
-            'direview_oleh' => $pustakawan->id,
-            'direview_at' => now(),
-        ]);
+        // Status + penerbitan surat dalam satu transaksi, supaya tidak
+        // ada status "disetujui" tanpa surat kalau pembuatan PDF gagal.
+        $bebasPustaka = DB::transaction(function () use ($bebasPustaka, $pustakawan, $status, $keputusan, $catatan) {
+            $bebasPustaka->update([
+                'status' => $status,
+                'catatan_revisi' => $keputusan === 'revisi' ? $catatan : null,
+                'direview_oleh' => $pustakawan->id,
+                'direview_at' => now(),
+            ]);
+
+            // Terbitkan surat saat disetujui, memakai penandatangan yang sudah dipilih
+            if ($status === BebasPustakaStatus::DISETUJUI) {
+                return $this->suratService->generate($bebasPustaka);
+            }
+
+            return $bebasPustaka;
+        });
 
         $this->logActivity($pustakawan, "Review bebas pustaka #{$bebasPustaka->id}: {$status->label()}");
 

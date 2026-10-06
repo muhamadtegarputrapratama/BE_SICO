@@ -13,9 +13,13 @@ use Illuminate\Support\Str;
 
 class SuratBebasPustakaService
 {
-    // Nama view = nama file di resources/views/surat/ (tanpa .blade.php)
-    // File bebaspustaka.blade.php -> 'surat.bebaspustaka'
-   private const VIEW = 'surat.bebas-pustaka';
+    // File: resources/views/surat/bebas-pustaka.blade.php
+    private const VIEW = 'surat.bebas-pustaka';
+
+    /**
+     * Preview PDF on-the-fly (tidak disimpan ke storage).
+     * Dipakai pustakawan sebelum menyetujui.
+     */
     public function preview(BebasPustaka $bebasPustaka)
     {
         $bebasPustaka->load('user');
@@ -24,42 +28,19 @@ class SuratBebasPustakaService
         $nomorSurat = $bebasPustaka->nomor_surat
             ?? sprintf('%03d', $bebasPustaka->id);
 
-        // Simpan token kalau belum ada, supaya QR verify konsisten dgn DB
-        if (!$bebasPustaka->qr_token) {
+        // Simpan token kalau belum ada, supaya QR konsisten dengan DB
+        if (! $bebasPustaka->qr_token) {
             $bebasPustaka->update([
                 'qr_token' => Str::random(64),
             ]);
         }
 
-        $token = $bebasPustaka->qr_token;
-
-        // QR arahkan ke endpoint file (biar konsisten sama generate())
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $token;
-
-        $renderer = new ImageRenderer(
-            new RendererStyle(200),
-            new SvgImageBackEnd()
-        );
-
-        $writer = new Writer($renderer);
-        $qrSvg = $writer->writeString($verifyUrl);
-        $qrCode = base64_encode($qrSvg);
-
-        $surat = (object) [
-            'nomor_surat' => $nomorSurat,
-            'nim' => $bebasPustaka->user->nim,
-            'nama' => $bebasPustaka->user->nama,
-            'departemen' => $bebasPustaka->user->departemen,
-            'tanggal_surat' => now(),
-        ];
-
-        return Pdf::loadView(self::VIEW, [
-            'surat' => $surat,
-            'qrCode' => $qrCode,
-            'penandatangan' => $this->penandatangan($bebasPustaka),
-        ]);
+        return $this->buatPdf($bebasPustaka, $nomorSurat, $bebasPustaka->qr_token);
     }
 
+    /**
+     * Terbitkan surat final: simpan nomor, token, dan file PDF.
+     */
     public function generate(BebasPustaka $bebasPustaka)
     {
         $bebasPustaka->load('user');
@@ -70,33 +51,10 @@ class SuratBebasPustakaService
 
         $bebasPustaka->update([
             'nomor_surat' => $nomorSurat,
-            'qr_token' => $token,
+            'qr_token'    => $token,
         ]);
 
-        // QR arahkan ke endpoint publik yang nampilin FILE PDF langsung
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $token;
-
-        $renderer = new ImageRenderer(
-            new RendererStyle(200),
-            new SvgImageBackEnd()
-        );
-        $writer = new Writer($renderer);
-        $qrSvg = $writer->writeString($verifyUrl);
-        $qrCode = base64_encode($qrSvg);
-
-        $surat = (object) [
-            'nomor_surat' => $nomorSurat,
-            'nim' => $bebasPustaka->user->nim,
-            'nama' => $bebasPustaka->user->nama,
-            'departemen' => $bebasPustaka->user->departemen,
-            'tanggal_surat' => now(),
-        ];
-
-        $pdf = Pdf::loadView(self::VIEW, [
-            'surat' => $surat,
-            'qrCode' => $qrCode,
-            'penandatangan' => $this->penandatangan($bebasPustaka),
-        ]);
+        $pdf = $this->buatPdf($bebasPustaka, $nomorSurat, $token);
 
         $path = "bebas-pustaka/{$bebasPustaka->id}/surat-bebas-pustaka.pdf";
         Storage::disk('public')->put($path, $pdf->output());
@@ -108,18 +66,53 @@ class SuratBebasPustakaService
         return $bebasPustaka->fresh();
     }
 
+    /**
+     * Gambar QR (SVG) sebagai response HTTP.
+     */
     public function generateQR(BebasPustaka $bebasPustaka)
     {
-        $verifyUrl = config('app.url') . '/api/surat/bebas-pustaka/file/' . $bebasPustaka->qr_token;
-
-        $renderer = new ImageRenderer(
-            new RendererStyle(300),
-            new SvgImageBackEnd()
-        );
-        $writer = new Writer($renderer);
-        $qrSvg = $writer->writeString($verifyUrl);
+        $qrSvg = $this->qrSvg($this->verifyUrl($bebasPustaka->qr_token), 300);
 
         return response($qrSvg, 200)->header('Content-Type', 'image/svg+xml');
+    }
+
+    // =========================================================
+    // HELPER
+    // =========================================================
+
+    private function buatPdf(BebasPustaka $bebasPustaka, string $nomorSurat, string $token)
+    {
+        $qrCode = base64_encode($this->qrSvg($this->verifyUrl($token), 200));
+
+        $surat = (object) [
+            'nomor_surat'   => $nomorSurat,
+            'nim'           => $bebasPustaka->user->nim,
+            'nama'          => $bebasPustaka->user->nama,
+            'departemen'    => $bebasPustaka->user->departemen,
+            'tanggal_surat' => now(),
+        ];
+
+        return Pdf::loadView(self::VIEW, [
+            'surat'         => $surat,
+            'qrCode'        => $qrCode,
+            'penandatangan' => $this->penandatangan($bebasPustaka),
+        ]);
+    }
+
+    private function verifyUrl(string $token): string
+    {
+        // QR mengarah ke endpoint publik yang menampilkan file PDF
+        return config('app.url') . '/api/surat/bebas-pustaka/file/' . $token;
+    }
+
+    private function qrSvg(string $url, int $size): string
+    {
+        $renderer = new ImageRenderer(
+            new RendererStyle($size),
+            new SvgImageBackEnd()
+        );
+
+        return (new Writer($renderer))->writeString($url);
     }
 
     /**
