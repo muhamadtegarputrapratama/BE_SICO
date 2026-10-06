@@ -12,6 +12,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class BebasPustakaController extends Controller
 {
@@ -48,6 +49,22 @@ class BebasPustakaController extends Controller
     {
         if (! $request->user()->can('verifikasi-pustaka')) {
             return $this->error('Anda tidak memiliki akses.', null, 403);
+        }
+
+        // Penandatangan boleh dikirim langsung bersama keputusan,
+        // atau sudah tersimpan sebelumnya lewat endpoint /penandatangan.
+        $request->validate([
+            'penandatangan' => [
+                'nullable',
+                'string',
+                Rule::in(array_keys(config('pustakawan.daftar', []))),
+            ],
+        ]);
+
+        if ($request->filled('penandatangan')) {
+            $bebasPustaka->update([
+                'penandatangan' => $request->input('penandatangan'),
+            ]);
         }
 
         // Surat tidak boleh terbit tanpa penandatangan yang dipilih
