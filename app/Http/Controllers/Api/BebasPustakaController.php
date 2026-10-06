@@ -112,6 +112,28 @@ class BebasPustakaController extends Controller
         return $this->previewFile($request, $bebasPustaka, 'file_distribusi', 'File distribusi tidak ditemukan.');
     }
 
+    public function downloadSkripsi(Request $request, BebasPustaka $bebasPustaka)
+{
+    return $this->downloadFile(
+        $request,
+        $bebasPustaka,
+        'file_skripsi',
+        'File skripsi tidak ditemukan.',
+        'skripsi.pdf'
+    );
+}
+
+public function downloadDistribusi(Request $request, BebasPustaka $bebasPustaka)
+{
+    return $this->downloadFile(
+        $request,
+        $bebasPustaka,
+        'file_distribusi',
+        'File distribusi tidak ditemukan.',
+        'form-distribusi-skripsi.pdf'
+    );
+}
+
     protected function previewFile(Request $request, BebasPustaka $bebasPustaka, string $field, string $pesanTidakAda)
     {
         $user = $request->user();
@@ -130,4 +152,38 @@ class BebasPustakaController extends Controller
             Storage::disk('local')->path($bebasPustaka->{$field})
         );
     }
+
+    protected function downloadFile(
+    Request $request,
+    BebasPustaka $bebasPustaka,
+    string $field,
+    string $pesanTidakAda,
+    string $namaFile
+) {
+    $user = $request->user();
+
+    $bolehAkses =
+        $bebasPustaka->user_id === $user->id ||
+        $user->hasAnyRole(['pustakawan', 'atasan']);
+
+    if (! $bolehAkses) {
+        return $this->error(
+            'Anda tidak memiliki akses ke dokumen ini.',
+            null,
+            403
+        );
+    }
+
+    if (
+        ! $bebasPustaka->{$field} ||
+        ! Storage::disk('local')->exists($bebasPustaka->{$field})
+    ) {
+        return $this->error($pesanTidakAda, null, 404);
+    }
+
+    return response()->download(
+        Storage::disk('local')->path($bebasPustaka->{$field}),
+        $namaFile
+    );
+}
 }
