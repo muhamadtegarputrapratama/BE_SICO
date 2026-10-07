@@ -169,20 +169,18 @@ class PengajuanClearingController extends Controller
     ]);
 
     if ($data['keputusan'] === 'setuju') {
+    $pengajuanModel->update([
+        'status' => PengajuanClearingStatus::DISETUJUI,
+        'disetujui_atasan_oleh' => $request->user()->id,
+        'disetujui_atasan_at' => now(),
+    ]);
 
-        $pengajuanModel->update([
-            'status' => PengajuanClearingStatus::DISETUJUI,
-            'disetujui_atasan_oleh' => $request->user()->id,
-            'disetujui_atasan_at' => now(),
-        ]);
-
-    } else {
-
-        $pengajuanModel->update([
-            'status' => PengajuanClearingStatus::DITOLAK,
-        ]);
-    }
-
+    $this->suratService->generate($pengajuanModel);
+} else {
+    $pengajuanModel->update([
+        'status' => PengajuanClearingStatus::DITOLAK,
+    ]);
+}
     $pengajuanModel->refresh();
 
     return $this->success(
