@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PengajuanClearing\StorePengajuanClearingRequest;
+use App\Enums\PengajuanClearingStatus;
 use App\Http\Requests\ReviewRequest;
 use App\Models\PengajuanClearing;
 use App\Services\PengajuanClearingService;
@@ -144,32 +145,51 @@ class PengajuanClearingController extends Controller
     }
 
     public function reviewAtasan(Request $request, $pengajuan): JsonResponse
-    {
-        if (!$request->user()->hasRole('atasan')) {
-            return $this->error('Anda tidak memiliki akses.', null, 403);
-        }
-
-        $pengajuanModel = PengajuanClearing::find($pengajuan);
-
-        if (!$pengajuanModel) {
-            return $this->error(
-                "Data pengajuan clearing dengan ID {$pengajuan} tidak ditemukan.",
-                null,
-                404
-            );
-        }
-
-        $data = $request->validate([
-            'keputusan' => ['required', 'in:setuju,tolak'],
-        ]);
-
-     
-
-        return $this->success(
-            'Review atasan berhasil disimpan.',
-            $pengajuanModel
+{
+    if (!$request->user()->hasRole('atasan')) {
+        return $this->error(
+            'Anda tidak memiliki akses.',
+            null,
+            403
         );
     }
+
+    $pengajuanModel = PengajuanClearing::find($pengajuan);
+
+    if (!$pengajuanModel) {
+        return $this->error(
+            "Data pengajuan clearing dengan ID {$pengajuan} tidak ditemukan.",
+            null,
+            404
+        );
+    }
+
+    $data = $request->validate([
+        'keputusan' => ['required', 'in:setuju,tolak'],
+    ]);
+
+    if ($data['keputusan'] === 'setuju') {
+
+        $pengajuanModel->update([
+            'status' => PengajuanClearingStatus::DISETUJUI,
+            'disetujui_atasan_oleh' => $request->user()->id,
+            'disetujui_atasan_at' => now(),
+        ]);
+
+    } else {
+
+        $pengajuanModel->update([
+            'status' => PengajuanClearingStatus::DITOLAK,
+        ]);
+    }
+
+    $pengajuanModel->refresh();
+
+    return $this->success(
+        'Review atasan berhasil disimpan.',
+        $pengajuanModel
+    );
+}
 
     public function showQR($pengajuan)
     {
@@ -235,49 +255,65 @@ class PengajuanClearingController extends Controller
         }
     }
 
-    public function downloadSurat(Request $request, $pengajuan)
-    {
-        try {
-            if (!$pengajuan || $pengajuan == 0) {
-                return $this->error('ID pengajuan tidak valid.', null, 400);
-            }
-
-            $pengajuanModel = PengajuanClearing::find($pengajuan);
-
-            if (!$pengajuanModel) {
-                return $this->error('Data pengajuan tidak ditemukan.', null, 404);
-            }
-
-            $user = $request->user();
-
-            $bolehAkses =
-                (int) $pengajuanModel->user_id === (int) $user->id ||
-                $user->hasAnyRole(['admin', 'atasan']);
-
-            if (!$bolehAkses) {
-                return $this->error('Anda tidak memiliki akses ke surat ini.', null, 403);
-            }
-
-            if (!$pengajuanModel->file_surat) {
-                return $this->error('Surat belum tersedia.', null, 404);
-            }
-
-            if (!Storage::disk('public')->exists($pengajuanModel->file_surat)) {
-                return $this->error('File surat tidak ditemukan.', null, 404);
-            }
-
-            $path = Storage::disk('public')->path($pengajuanModel->file_surat);
-
-            return response()->download($path, 'surat-clearing.pdf');
-
-        } catch (\Exception $e) {
+ public function downloadSurat(Request $request, $pengajuan)
+{
+    try {
+        if (!$pengajuan || $pengajuan == 0) {
             return $this->error(
-                'Terjadi kesalahan: ' . $e->getMessage(),
+                'ID pengajuan tidak valid.',
                 null,
-                500
+                400
             );
         }
+
+        $pengajuanModel = PengajuanClearing::with('user')
+            ->find($pengajuan);
+
+        if (!$pengajuanModel) {
+            return $this->error(
+                'Data pengajuan tidak ditemukan.',
+                null,
+                404
+            );
+        }
+
+        $user = $request->user();
+
+        $bolehAkses =
+            (int) $pengajuanModel->user_id === (int) $user->id ||
+            $user->hasAnyRole(['admin', 'atasan']);
+
+        if (!$bolehAkses) {
+            return $this->error(
+                'Anda tidak memiliki akses ke surat ini.',
+                null,
+                403
+            );
+        }
+
+        // Generate PDF langsung seperti fitur preview
+        $pdf = $this->suratService->preview($pengajuanModel);
+
+        return $pdf->download(
+            "surat-clearing-{$pengajuanModel->id}.pdf"
+        );
+
+    } catch (\Throwable $e) {
+
+        \Log::error('Download Surat Error', [
+            'pengajuan_id' => $pengajuan,
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return $this->error(
+            'Terjadi kesalahan: ' . $e->getMessage(),
+            null,
+            500
+        );
     }
+}
 
     public function previewDokumen(Request $request, $pengajuan, string $jenis)
     {
