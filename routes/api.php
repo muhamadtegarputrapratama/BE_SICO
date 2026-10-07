@@ -165,7 +165,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/{bebasPustaka}/download', [
             BebasPustakaController::class,
-            'download'
+            'downloadSkripsi'
         ]);
 
         Route::get('/{bebasPustaka}/download-distribusi', [
