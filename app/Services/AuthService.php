@@ -16,10 +16,10 @@ class AuthService
     {
         $kode = strtoupper(substr($data['nim'], 0, 4));
         $departemen = match ($kode) {
-            'E441' => 'Departemen Manajemen Hutan',
-            'E442' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
-            'E443' => 'Departemen Silvikultur',
-            'E444' => 'Departemen Hasil Hutan',
+            'E141' => 'Departemen Manajemen Hutan',
+            'E241' => 'Departemen Hasil Hutan',
+            'E341' => 'Departemen Konservasi Sumberdaya Hutan dan Ekowisata',
+            'E441' => 'Departemen Silvikultur',
             default => null,
         };
 
